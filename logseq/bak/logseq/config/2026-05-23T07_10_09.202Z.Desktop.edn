@@ -420,6 +420,6 @@
  ;;      ;use Percent-encoding for other invalid characters
  :file/name-format :triple-lowbar
  :graph/settings {:excluded-pages? false
- :builtin-pages? false
- :orphan-pages? true
+ :builtin-pages? true
+ :orphan-pages? false
  :journal? false}}

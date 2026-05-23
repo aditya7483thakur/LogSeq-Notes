@@ -1,4 +1,5 @@
 - Ports, Interfaces, fixed Ip, floating Ip, Reserved Ip
+  collapsed:: true
 	- ## 1. Core Mental Model
 	  
 	  ```
@@ -72,8 +73,8 @@
 	  ```
 	  
 	  OpenStack represents virtual interfaces using Neutron Ports.
-	  
-	  ---
+	- Interfaces send/receive packets.
+	- ---
 	- # 4. What is a Fixed IP?
 	  
 	  A fixed IP is:
@@ -180,9 +181,15 @@
 	  ```
 	  Router performs routing.
 	  Ports only provide connectivity/interfaces.
+	  A router owns multiple ports/interfaces.
+	  One router-interface port exists per subnet.
 	  ```
-	  
-	  ---
+	- Router Internally looks like
+		- Router R1
+		     ├── Port1 -> 10.0.0.1 -> subnet A
+		     ├── Port2 -> 192.168.1.1 -> subnet B
+		     └── Port3 -> 172.16.0.1 -> subnet C
+	- ---
 	- # 8. Floating IP vs Fixed IP
 	- ## Fixed IP
 	  
@@ -341,3 +348,263 @@
 		  Meaning:
 		- a private IP can be reserved
 		- a public IP can also be reserved
+- Public Ip VS Floating Ip
+  collapsed:: true
+	- # 1️⃣ Public IP
+	  
+	  A public IP means:
+	  
+	  ```
+	  Any IP address reachable from the internet
+	  ```
+	  
+	  Example:
+	  
+	  ```
+	  8.8.8.8
+	  142.250.x.x
+	  203.0.113.25
+	  ```
+	  
+	  Characteristics:
+	- internet routable
+	- globally unique
+	- reachable from outside world
+	  
+	  That’s all.
+	  
+	  ---
+	- # 2️⃣ Floating IP
+	  
+	  A floating IP is:
+	  
+	  ```
+	  A cloud-managed public IP dynamically mapped to a private/fixed IP
+	  ```
+	  
+	  Example:
+	  
+	  ```
+	  Floating IP: 203.0.113.25
+	  Fixed IP:    10.0.0.5
+	  ```
+	  
+	  Mapping:
+	  
+	  ```
+	  203.0.113.25
+	        ↓ NAT
+	  10.0.0.5
+	  ```
+	  
+	  ---
+	- # Key difference
+	- ## Public IP
+	  
+	  Generic networking concept.
+	  ---
+	- ## Floating IP
+	  
+	  Cloud/OpenStack concept.
+	  
+	  It is:
+	  
+	  ```
+	  a movable public IP managed through NAT mapping
+	  ```
+	  
+	  ---
+	- # Why called “floating”?
+	  
+	  Because it can move between instances/VMs.
+	  
+	  Example:
+	  
+	  Initially:
+	  
+	  ```
+	  203.0.113.25 -> VM1
+	  ```
+	  
+	  Later:
+	  
+	  ```
+	  203.0.113.25 -> VM2
+	  ```
+	  
+	  Same public IP “floats” between machines.
+	  
+	  ---
+	- # In OpenStack
+	  
+	  Floating IP usually:
+	- belongs to external/public network
+	- mapped to fixed IP
+	- handled by router NAT
+	- not directly configured inside VM
+	  
+	  ---
+	- # Important understanding
+	  
+	  Inside VM you usually see:
+	  
+	  ```
+	  10.0.0.5
+	  ```
+	  
+	  NOT:
+	  
+	  ```
+	  203.0.113.25
+	  ```
+	  
+	  because floating IP exists at networking/router layer.
+	  
+	  ---
+	- # Packet flow
+	  
+	  ```
+	  Internet
+	   ↓
+	  Floating/Public IP
+	  203.0.113.25
+	   ↓
+	  OpenStack Router NAT
+	   ↓
+	  Fixed IP
+	  10.0.0.5
+	   ↓
+	  VM
+	  ```
+	  
+	  ---
+	- # VERY IMPORTANT
+	- ## Every floating IP is usually public
+	  
+	  TRUE.
+	  
+	  ---
+	- ## But not every public IP is floating
+	  
+	  Also TRUE.
+	  
+	  Example:
+	  
+	  A physical server directly configured with internet IP:
+	  
+	  ```
+	  203.x.x.x
+	  ```
+	  
+	  This is:
+	  
+	  ```
+	  public IP
+	  ```
+	  
+	  but NOT floating IP.
+	  
+	  Because no cloud NAT mapping exists.
+	  
+	  ---
+	- # Real-world analogy
+	- ## Public IP
+	  
+	  ```
+	  Permanent phone number
+	  ```
+	  
+	  ---
+	- ## Floating IP
+	  
+	  ```
+	  Call forwarding number
+	  ```
+	  
+	  Today forwarded to:
+	  
+	  ```
+	  Person A
+	  ```
+	  
+	  Tomorrow forwarded to:
+	  
+	  ```
+	  Person B
+	  ```
+	  
+	  Same number moves dynamically.
+- Firewall VS Security Groups
+  collapsed:: true
+	- ## Firewall
+	- A firewall is a centralized network security system that filters and controls traffic between networks/subnets.
+	- It decides whether packets should be **allowed or blocked** based on:
+		- source IP
+		- destination IP
+		- protocol (TCP/UDP)
+		- port numbers
+	- Firewalls usually protect:
+		- entire networks
+		- subnets
+		- internet boundaries
+	- Firewalls can also perform:
+		- NAT
+		- VPN
+		- routing
+		- IDS/IPS
+		- deep packet inspection
+		- network segmentation
+	- ### Example
+	  
+	  ```
+	  Internet
+	   ↓
+	  Firewall
+	   ↓
+	  Private VPC/Subnets
+	  ```
+	  
+	  ---
+	- ## Security Groups
+	- Security Groups are cloud-managed mini firewalls.
+	- They are attached to:
+		- VM instances
+		- network interfaces/ports
+	- They mainly perform:
+		- ingress/egress filtering
+		- protocol filtering
+		- TCP/UDP port filtering
+		- source IP filtering
+	- They usually protect:
+		- a single VM
+		- a single interface/port
+	- ### Example
+	  
+	  ```
+	  VM Interface
+	   ↓
+	  Security Group
+	   ↓
+	  Allow:
+	  - SSH 22
+	  - HTTPS 443
+	  ```
+	  
+	  ---
+	- # Key Difference
+	  
+	  | Firewall | Security Group |
+	  | ---- | ---- | ---- |
+	  | Centralized network security system | Lightweight cloud firewall |
+	  | Protects networks/subnets | Protects single VM/interface |
+	  | Supports NAT, VPN, routing, IDS/IPS | Mostly packet filtering |
+	  | Works at broader network level | Works at instance/interface level |
+	  | Can inspect and route traffic | Mainly allow/deny rules |
+	  
+	  ---
+	- # Important Understanding
+	  
+	  ```
+	  Security Group = simplified cloud firewall
+	  Firewall = broader and more powerful network security/routing system
+	  ```
