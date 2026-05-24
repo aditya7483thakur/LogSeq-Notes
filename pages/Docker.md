@@ -1363,9 +1363,6 @@
 	- ephemeral
 	  
 	  This means:
-	  
-	  > 
-	  
 	  When container is deleted, its data is also lost.
 	  
 	  ---
@@ -1393,9 +1390,6 @@
 	- # 2. What is Docker Volume?
 	  
 	  A Docker Volume is:
-	  
-	  > 
-	  
 	  A persistent storage mechanism managed by Docker.
 	  
 	  Volumes allow data to:
@@ -1740,3 +1734,407 @@
 	  
 	  Docker creates:
 	- anonymous volume automatically
+- Docker Compose
+  collapsed:: true
+	- # 1. What is Docker Compose?
+	  
+	  Docker Compose is a tool used to:
+	  
+	  > 
+	  
+	  Define and run multiple Docker containers together using a single YAML file.
+	  
+	  ---
+	- # Problem Without Docker Compose
+	  
+	  Suppose application has:
+	- frontend
+	- backend
+	- MongoDB
+	  
+	  Without Compose, you manually run:
+	  
+	  ```
+	  docker network create mynetwork
+	  
+	  docker run -d --name mongodb --network mynetwork mongo
+	  
+	  docker run -d --name backend --network mynetwork backend-image
+	  
+	  docker run -d --name frontend --network mynetwork frontend-image
+	  ```
+	  
+	  Managing many containers manually becomes difficult.
+	  
+	  ---
+	- # Docker Compose Solves This
+	  
+	  You define everything in:
+	  
+	  ```
+	  docker-compose.yml
+	  ```
+	  
+	  Then run entire application using:
+	  
+	  ```
+	  docker compose up
+	  ```
+	  
+	  ---
+	- # 2. Main Benefits of Docker Compose
+	  
+	  | Benefit | Explanation |
+	  | ---- | ---- | ---- |
+	  | Multi-container management | Run all services together |
+	  | Easy networking | Automatic service communication |
+	  | Centralized configuration | Everything in one YAML file |
+	  | Easy startup/shutdown | One command |
+	  | Better development workflow | Simplifies local environments |
+	  
+	  ---
+	- # 3. Docker Compose Architecture
+	  
+	  ```
+	  docker-compose.yml
+	        ↓
+	  Docker Compose
+	        ↓
+	  ┌──────────┐
+	  │Frontend  │
+	  └──────────┘
+	  
+	  ┌──────────┐
+	  │Backend   │
+	  └──────────┘
+	  
+	  ┌──────────┐
+	  │MongoDB   │
+	  └──────────┘
+	  ```
+	  
+	  ---
+	- # 4. Docker Compose File
+	  
+	  Compose uses:
+	  
+	  ```
+	  docker-compose.yml
+	  ```
+	  
+	  written in:
+	- YAML format
+	  
+	  ---
+	- # 5. Real Example (MERN Application)
+	  
+	  Suppose application has:
+	- frontend
+	- backend
+	- MongoDB
+	  
+	  ---
+	- # Example Compose File
+	  
+	  ```
+	  version: "3.9"
+	  
+	  services:
+	  
+	  frontend:
+	    build: ./frontend
+	    ports:
+	      - "3000:3000"
+	    depends_on:
+	      - backend
+	  
+	  backend:
+	    build: ./backend
+	    ports:
+	      - "5000:5000"
+	    environment:
+	      MONGO_URI: mongodb://mongo:27017/mydb
+	    depends_on:
+	      - mongo
+	  
+	  mongo:
+	    image: mongo
+	    ports:
+	      - "27017:27017"
+	    volumes:
+	      - mongo-data:/data/db
+	  
+	  volumes:
+	  mongo-data:
+	  ```
+	  
+	  ---
+	- # 6. Step-by-Step Explanation
+	  
+	  ---
+	- # `services`
+	  
+	  ```
+	  services:
+	  ```
+	  
+	  Defines all containers/services.
+	  
+	  ---
+	- # Frontend Service
+	  
+	  ```
+	  frontend:
+	  build: ./frontend
+	  ```
+	  
+	  Meaning:
+	- build Docker image from:
+	  
+	  ```
+	  ./frontend
+	  ```
+	  
+	  folder.
+	  
+	  ---
+	- # Port Mapping
+	  
+	  ```
+	  ports:
+	  - "3000:3000"
+	  ```
+	  
+	  Meaning:
+	  
+	  ```
+	  Host Port 3000
+	        ↓
+	  Container Port 3000
+	  ```
+	  
+	  ---
+	- # `depends_on`
+	  
+	  ```
+	  depends_on:
+	  - backend
+	  ```
+	  
+	  Meaning:
+	- frontend starts after backend.
+	  
+	  ---
+	- # Backend Service
+	  
+	  ```
+	  backend:
+	  ```
+	  
+	  Another container/service.
+	  
+	  ---
+	- # Environment Variables
+	  
+	  ```
+	  environment:
+	  MONGO_URI: mongodb://mongo:27017/mydb
+	  ```
+	  
+	  Very important.
+	  
+	  ---
+	- # Why `mongo` Works Here?
+	  
+	  Docker Compose automatically creates:
+	- custom bridge network
+	- internal DNS
+	  
+	  So backend can communicate using:
+	  
+	  ```
+	  mongo
+	  ```
+	  
+	  instead of IP address.
+	  
+	  ---
+	- # Mongo Service
+	  
+	  ```
+	  mongo:
+	  image: mongo
+	  ```
+	  
+	  Uses official MongoDB image directly from Docker Hub.
+	  
+	  ---
+	- # Volume
+	  
+	  ```
+	  volumes:
+	  - mongo-data:/data/db
+	  ```
+	  
+	  Meaning:
+	  
+	  ```
+	  Docker Volume → mongo-data
+	  Container Path → /data/db
+	  ```
+	  
+	  MongoDB data becomes persistent.
+	  
+	  ---
+	- # Global Volume Declaration
+	  
+	  ```
+	  volumes:
+	  mongo-data:
+	  ```
+	  
+	  Creates named Docker volume.
+	  
+	  ---
+	- # 7. How Docker Compose Networking Works
+	  
+	  Docker Compose automatically creates:
+	- custom bridge network
+	  
+	  All services join same network.
+	  
+	  ---
+	- # Result
+	  
+	  Containers communicate using:
+	- service names
+	  
+	  Example:
+	  
+	  ```
+	  frontend → backend
+	  backend → mongo
+	  ```
+	  
+	  No manual IP handling needed.
+	  
+	  ---
+	- # 8. Important Docker Compose Commands
+	  
+	  ---
+	- # Start Application
+	  
+	  ```
+	  docker compose up
+	  ```
+	  
+	  ---
+	- # Run in Background
+	  
+	  ```
+	  docker compose up -d
+	  ```
+	  
+	  ---
+	- # Stop Application
+	  
+	  ```
+	  docker compose down
+	  ```
+	  
+	  ---
+	- # View Running Containers
+	  
+	  ```
+	  docker compose ps
+	  ```
+	  
+	  ---
+	- # Rebuild Images
+	  
+	  ```
+	  docker compose up --build
+	  ```
+	  
+	  ---
+	- # View Logs
+	  
+	  ```
+	  docker compose logs
+	  ```
+	  
+	  ---
+	- # 9. What Happens Internally?
+	  
+	  When you run:
+	  
+	  ```
+	  docker compose up
+	  ```
+	  
+	  Docker Compose:
+	- reads YAML file
+	- creates network
+	- builds images
+	- creates containers
+	- attaches volumes
+	- starts services
+	  
+	  automatically.
+	  
+	  ---
+	- # Internal Flow
+	  
+	  ```
+	  docker-compose.yml
+	        ↓
+	  Create Network
+	        ↓
+	  Build Images
+	        ↓
+	  Create Containers
+	        ↓
+	  Attach Volumes
+	        ↓
+	  Start Services
+	  ```
+	  
+	  ---
+	- # 10. Why Docker Compose is Useful
+	  
+	  Without Compose:
+	- many long commands
+	- manual networking
+	- manual startup ordering
+	  
+	  With Compose:
+	- entire infrastructure in one file
+	  
+	  ---
+	- # Real-World Usage
+	  
+	  Very common for:
+	- local development
+	- microservices
+	- testing environments
+	- CI/CD pipelines
+- Docker Compose vs Kubernetes
+  collapsed:: true
+	- | Feature | Docker Compose | Kubernetes |
+	  | ---- | ---- | ---- |
+	  | Purpose | Multi-container management | Production container orchestration |
+	  | Scale | Single machine | Multi-node cluster |
+	  | Complexity | Simple | Complex |
+	  | Setup | Easy | Difficult |
+	  | Best Use Case | Development/testing | Production systems |
+	  | Scaling | Limited | Massive |
+	  | Auto-Healing | No | Yes |
+	  | Load Balancing | Minimal | Advanced |
+	  | Networking | Simple | Advanced cluster networking |
+	  | Storage | Docker volumes | PV/PVC |
+	  | High Availability | Limited | Strong |
+	  | Rolling Updates | Limited | Built-in |
+	  | Service Discovery | Basic | Advanced |
+	  | Cloud Integration | Minimal | Extensive |
+	  | Self-Healing | No | Yes |
+	  | Infrastructure Management | Small scale | Enterprise scale |
