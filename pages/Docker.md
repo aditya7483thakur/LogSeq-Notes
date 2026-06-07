@@ -2138,3 +2138,479 @@
 	  | Cloud Integration | Minimal | Extensive |
 	  | Self-Healing | No | Yes |
 	  | Infrastructure Management | Small scale | Enterprise scale |
+- Docker Registry
+  collapsed:: true
+	- # 1. What is a Docker Registry?
+	  
+	  A Docker Registry is:
+	  
+	  > 
+	  
+	  A storage system used to store and distribute Docker images.
+	  
+	  Think of it as:
+	  
+	  ```
+	  GitHub → Stores Source Code
+	  
+	  Docker Registry → Stores Docker Images
+	  ```
+	  
+	  ---
+	- # Why Do We Need a Registry?
+	  
+	  Suppose you build an image:
+	  
+	  ```
+	  docker build -t mybackend .
+	  ```
+	  
+	  This image exists only on:
+	- your laptop
+	  
+	  How will:
+	- teammates
+	- servers
+	- Kubernetes clusters
+	  
+	  access it?
+	  
+	  You push it to a registry.
+	  
+	  ---
+	- # Flow
+	  
+	  ```
+	  Developer
+	    ↓
+	  Build Image
+	    ↓
+	  Push to Registry
+	    ↓
+	  Other Machines Pull Image
+	  ```
+	  
+	  ---
+	- # Example
+	  
+	  ```
+	  Developer Laptop
+	      ↓
+	  Docker Hub
+	      ↓
+	  Production Server
+	  ```
+	  
+	  ---
+	- # 2. Docker Hub
+	  
+	  Most popular registry:
+	  
+	  Docker Hub
+	  
+	  Contains:
+	- official images
+	- community images
+	- private repositories
+	  
+	  ---
+	- # Example Images
+	  
+	  ```
+	  docker pull nginx
+	  docker pull mongo
+	  docker pull redis
+	  docker pull ubuntu
+	  ```
+	  
+	  All downloaded from Docker Hub.
+	  
+	  ---
+	- # 3. Public vs Private Registry
+	  
+	  | Type | Description |
+	  | ---- | ---- | ---- |
+	  | Public | Anyone can pull images |
+	  | Private | Restricted access |
+	  
+	  ---
+	- # Examples
+	  
+	  Public:
+	  
+	  ```
+	  docker.io/library/nginx
+	  ```
+	  
+	  Private:
+	  
+	  ```
+	  company/backend:v1
+	  ```
+	  
+	  accessible only to organization.
+	  
+	  ---
+	- # 4. Other Popular Registries
+	  
+	  | Registry | Provider |
+	  | ---- | ---- | ---- |
+	  | Docker Hub | Docker |
+	  | Amazon ECR | AWS |
+	  | Google Artifact Registry | Google |
+	  | Azure Container Registry | Microsoft |
+	  | Harbor | Self-hosted |
+	  
+	  ---
+	- # 5. Docker Image Lifecycle
+	  
+	  ```
+	  Dockerfile
+	     ↓
+	  docker build
+	     ↓
+	  Docker Image
+	     ↓
+	  docker push
+	     ↓
+	  Registry
+	     ↓
+	  docker pull
+	     ↓
+	  Container
+	  ```
+	  
+	  ---
+	- # 6. Image Tags
+	  
+	  Images usually have:
+	  
+	  ```
+	  image-name:tag
+	  ```
+	  
+	  Example:
+	  
+	  ```
+	  nginx:latest
+	  mongo:7
+	  node:20-alpine
+	  ```
+	  
+	  ---
+	- # Why Tags?
+	  
+	  Different versions.
+	  
+	  Example:
+	  
+	  ```
+	  node:18
+	  node:20
+	  node:22
+	  ```
+	  
+	  ---
+	- # Best Practice
+	  
+	  Avoid:
+	  
+	  ```
+	  latest
+	  ```
+	  
+	  in production.
+	  
+	  Prefer:
+	  
+	  ```
+	  node:20
+	  mongo:7
+	  ```
+	  
+	  because versions become predictable.
+	  
+	  ---
+	- # Frequently Used Docker Commands
+	  
+	  ---
+	- # Check Docker Version
+	  
+	  ```
+	  docker --version
+	  ```
+	  
+	  ---
+	- # Show Docker Information
+	  
+	  ```
+	  docker info
+	  ```
+	  
+	  Shows:
+	- containers
+	- images
+	- storage drivers
+	- runtime information
+- Multi-Stage Docker Builds
+  collapsed:: true
+	- # 1. Why Do We Need Multi-Stage Builds?
+	  
+	  Many applications require additional tools during the build phase.
+	  
+	  Examples:
+	- TypeScript compiler
+	- Maven
+	- Gradle
+	- Webpack
+	- Testing frameworks
+	- Development dependencies
+	  
+	  These tools are needed only to build the application.
+	  
+	  After the application is built, only the final executable/artifacts are required.
+	  
+	  ---
+	- # Problem with Traditional Docker Builds
+	  
+	  Consider a Node.js TypeScript application.
+	  
+	  ```
+	  FROM node:20
+	  
+	  WORKDIR /app
+	  
+	  COPY package*.json ./
+	  
+	  RUN npm install
+	  
+	  COPY . .
+	  
+	  RUN npm run build
+	  
+	  CMD ["node", "dist/index.js"]
+	  ```
+	  
+	  ---
+	- # What Gets Stored in Final Image?
+	  
+	  ```
+	  Final Image
+	  │
+	  ├── Node Runtime
+	  ├── Source Code
+	  ├── TypeScript Files
+	  ├── node_modules
+	  ├── TypeScript Compiler
+	  ├── Development Dependencies
+	  └── dist/
+	  ```
+	  
+	  Even though the application only runs from:
+	  
+	  ```
+	  dist/
+	  ```
+	  
+	  all build dependencies remain inside the image.
+	  
+	  ---
+	- # Problems
+	- Larger image size
+	- Slower image pull/push
+	- Increased security surface
+	- Unnecessary files in production
+	  
+	  ---
+	- # 2. Multi-Stage Build Solution
+	  
+	  Multi-stage builds separate:
+	  
+	  ```
+	  Build Environment
+	        ↓
+	  Production Environment
+	  ```
+	  
+	  The build stage creates artifacts.
+	  
+	  The runtime stage contains only the files required to run the application.
+	  
+	  ---
+	- # Multi-Stage Dockerfile
+	  
+	  ```
+	  # Build Stage
+	  FROM node:20 AS builder
+	  
+	  WORKDIR /app
+	  
+	  COPY package*.json ./
+	  
+	  RUN npm install
+	  
+	  COPY . .
+	  
+	  RUN npm run build
+	  
+	  # Runtime Stage
+	  FROM node:20-alpine
+	  
+	  WORKDIR /app
+	  
+	  COPY --from=builder /app/dist ./dist
+	  
+	  CMD ["node", "dist/index.js"]
+	  ```
+	  
+	  ---
+	- # Stage 1: Builder
+	  
+	  ```
+	  FROM node:20 AS builder
+	  ```
+	  
+	  Creates a build environment.
+	  
+	  Contains:
+	  
+	  ```
+	  Node Runtime
+	  Source Code
+	  TypeScript
+	  Build Dependencies
+	  ```
+	  
+	  Application is compiled:
+	  
+	  ```
+	  RUN npm run build
+	  ```
+	  
+	  Result:
+	  
+	  ```
+	  /app/dist
+	  ```
+	  
+	  ---
+	- # Stage 2: Runtime
+	  
+	  ```
+	  FROM node:20-alpine
+	  ```
+	  
+	  Creates a fresh image.
+	  
+	  Notice:
+	  
+	  ```
+	  COPY --from=builder /app/dist ./dist
+	  ```
+	  
+	  Only the compiled application is copied.
+	  
+	  ---
+	- # Final Runtime Image
+	  
+	  ```
+	  Final Image
+	  │
+	  ├── Node Runtime
+	  └── dist/
+	  ```
+	  
+	  Builder tools are excluded.
+	  
+	  ---
+	- # Comparison
+	- ## Traditional Build
+	  
+	  ```
+	  Image
+	  │
+	  ├── Source Code
+	  ├── TypeScript
+	  ├── Build Tools
+	  ├── Dev Dependencies
+	  ├── node_modules
+	  └── dist/
+	  ```
+	  
+	  ---
+	- ## Multi-Stage Build
+	  
+	  ```
+	  Image
+	  │
+	  ├── Node Runtime
+	  └── dist/
+	  ```
+	  
+	  ---
+	- # What Does `AS builder` Do?
+	  
+	  ```
+	  FROM node:20 AS builder
+	  ```
+	  
+	  Assigns a name to the stage.
+	  
+	  Later:
+	  
+	  ```
+	  COPY --from=builder ...
+	  ```
+	  
+	  allows copying files from that stage.
+	  
+	  ---
+	- # What Does `COPY --from` Do?
+	  
+	  ```
+	  COPY --from=builder /app/dist ./dist
+	  ```
+	  
+	  Meaning:
+	  
+	  ```
+	  Take:
+	    /app/dist
+	  
+	  From:
+	    builder stage
+	  
+	  Copy To:
+	    ./dist
+	  ```
+	  
+	  inside current stage.
+	  
+	  ---
+	- # Benefits of Multi-Stage Builds
+	- ## Smaller Images
+	  
+	  Removes:
+	- build tools
+	- compilers
+	- development dependencies
+	  
+	  ---
+	- ## Faster Deployments
+	  
+	  Smaller images:
+	- push faster
+	- pull faster
+	- start faster
+	  
+	  ---
+	- ## Better Security
+	  
+	  Production image contains fewer packages and binaries.
+	  
+	  Lower attack surface.
+	  
+	  ---
+	- ## Cleaner Production Environment
+	  
+	  Only runtime dependencies are shipped.
