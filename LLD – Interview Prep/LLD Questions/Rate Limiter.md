@@ -1,0 +1,173 @@
+### CODE → [https://github.com/aditya7483thakur/LLD-Problems/tree/master/Rate Limiter](https://github.com/aditya7483thakur/LLD-Problems/tree/master/Rate%20Limiter)
+-
+- ### **Algorithms for rate limiting**
+	- [https://bytebytego.com/courses/system-design-interview/design-a-rate-limiter](https://bytebytego.com/courses/system-design-interview/design-a-rate-limiter)
+-
+- ### **Token bucket algorithm**
+	- The token bucket algorithm work as follows:
+	- A token bucket is a container that has pre-defined capacity. Tokens are put in the bucket at preset rates periodically. Once the bucket is full, no more tokens are added. As shown in Figure 4, the token bucket capacity is 4. The refiller puts 2 tokens into the bucket every second. Once the bucket is full, extra tokens will overflow.
+	  ![figure-4-4-37HFRAED.svg](Rate%20Limiter/figure-4-4-37HFRAED.svg)
+	- Each request consumes one token. When a request arrives, we check if there are enough tokens in the bucket. Figure 5 explains how it works.
+	- If there are enough tokens, we take one token out for each request, and the request goes through.
+	- If there are not enough tokens, the request is dropped.
+	  ![figure-4-5-FGZ35C5S.svg](Rate%20Limiter/figure-4-5-FGZ35C5S.svg)
+	- Figure 6 illustrates how token consumption, refill, and rate limiting logic work. In this example, the token bucket size is 4, and the refill rate is 4 per 1 minute.
+	  ![image.png](Rate%20Limiter/image.png)
+	- The token bucket algorithm takes two parameters:
+		- Bucket size: the maximum number of tokens allowed in the bucket
+		- Refill rate: number of tokens put into the bucket every second
+	- How many buckets do we need? This varies, and it depends on the rate-limiting rules. Here are a few examples.
+		- It is usually necessary to have different buckets for different API endpoints. For instance, if a user is allowed to make 1 post per second, add 150 friends per day, and like 5 posts per second, 3 buckets are required for each user.
+		- If we need to throttle requests based on IP addresses, each IP address requires a bucket.
+		- If the system allows a maximum of 10,000 requests per second, it makes sense to have a global bucket shared by all requests.
+	- Pros:
+		- The algorithm is easy to implement.
+		- Memory efficient.
+		- Token bucket allows a burst of traffic for short periods. A request can go through as long as there are tokens left.
+	- Cons:
+		- Two parameters in the algorithm are bucket size and token refill rate. However, it might be challenging to tune them properly.
+-
+- ### **Leaking bucket algorithm**
+	- The leaking bucket algorithm is similar to the token bucket except that requests are processed at a fixed rate. It is usually implemented with a first-in-first-out (FIFO) queue. The algorithm works as follows:
+	- When a request arrives, the system checks if the queue is full. If it is not full, the request is added to the queue.
+	- Otherwise, the request is dropped.
+	- Requests are pulled from the queue and processed at regular intervals.
+	- Figure 7 explains how the algorithm works.
+	  ![Image represents a system for processing requests using a rate-limiting mechanism.  A group of incoming requests, depicted as several light-blue rectangles within a dashed box labeled 'requests,' are fed into a decision diamond labeled 'bucket full?'. If the bucket is not full ('no' branch), the requests enter a queue represented as a rectangle divided into sections, some filled light-blue and some white, labeled 'queue.'  This queue suggests a buffer holding requests before processing.  From the queue, requests are 'processed at a fixed rate,' indicated by an arrow leading to another group of light-blue rectangles within a dashed box labeled 'requests go through,' signifying processed requests. If the bucket is full ('yes' branch), the requests are directed to a grayed-out area at the bottom, labeled with the text 'Viewer does not support full SVG 1.1,' suggesting a rejection or alternative handling path due to a limitation.  The overall diagram illustrates a system that manages incoming requests, buffering them in a queue, and processing them at a controlled rate to prevent overload.](https://bytebytego.com/images/courses/system-design-interview/design-a-rate-limiter/figure-4-7-AI26NI2Y.svg)
+	- Figure 7
+	- Leaking bucket algorithm takes the following two parameters:
+		- Bucket size: it is equal to the queue size. The queue holds the requests to be processed at a fixed rate.
+		- Outflow rate: it defines how many requests can be processed at a fixed rate, usually in seconds.
+	- Shopify, an ecommerce company, uses leaky buckets for rate-limiting [7].
+	- Pros:
+		- Memory efficient given the limited queue size.
+		- Requests are processed at a fixed rate therefore it is suitable for use cases that a stable outflow rate is needed.
+	- Cons:
+		- A burst of traffic fills up the queue with old requests, and if they are not processed in time, recent requests will be rate limited.
+		- There are two parameters in the algorithm. It might not be easy to tune them properly.
+-
+- ### **Fixed window counter algorithm**
+	- Fixed window counter algorithm works as follows:
+	- The algorithm divides the timeline into fix-sized time windows and assign a counter for each window.
+	- Each request increments the counter by one.
+	- Once the counter reaches the pre-defined threshold, new requests are dropped until a new time window starts.
+	- Let us use a concrete example to see how it works. In Figure 8, the time unit is 1 second and the system allows a maximum of 3 requests per second. In each second window, if more than 3 requests are received, extra requests are dropped as shown in Figure 8.
+	  ![Image represents a time-series chart visualizing the number of successful and rate-limited requests over a five-minute interval. The horizontal axis represents time, marked at one-minute intervals from 1:00:00 to 1:00:04. The vertical axis represents the number of requests.  Each rectangle represents a single request; light gray rectangles denote rate-limited requests, while white rectangles represent successful requests.  The chart shows a fluctuating pattern: at 1:00:00, there are three successful requests; at 1:00:01, there are three successful requests and three rate-limited requests; at 1:00:02, there are three successful requests and one rate-limited request; at 1:00:03, there is one successful request; and at 1:00:04, there are three successful requests and two rate-limited requests.  The legend clearly distinguishes between successful and rate-limited requests.  The bottom right corner displays a message indicating that the viewer does not support full SVG 1.1.](https://bytebytego.com/images/courses/system-design-interview/design-a-rate-limiter/figure-4-8-WZZYUXFU.svg)
+	- Figure 8
+	- A major problem with this algorithm is that a burst of traffic at the edges of time windows could cause more requests than allowed quota to go through. Consider the following case:
+	  ![Image represents a time-series chart illustrating request distribution over a period of two minutes.  A horizontal timeline runs from 2:00:00 to 2:02:00, marked with vertical lines at each minute.  Within a dashed-line box spanning from approximately 2:00:30 to 2:01:30, light-blue rectangles represent individual requests.  The rectangles are stacked vertically to show multiple requests occurring at roughly the same time.  A total of ten requests are shown, indicated by a double-headed arrow above the box labeled '10 requests'.  The requests are not uniformly distributed; some time intervals have more requests than others.  Below the chart, the text 'Viewer does not support full SVG 1.1' suggests a possible limitation or constraint related to the data visualization.](https://bytebytego.com/images/courses/system-design-interview/design-a-rate-limiter/figure-4-9-52MK6L22.svg)
+	- Figure 9
+	- In Figure 9, the system allows a maximum of 5 requests per minute, and the available quota resets at the human-friendly round minute. As seen, there are five requests between 2:00:00 and 2:01:00 and five more requests between 2:01:00 and 2:02:00. For the one-minute window between 2:00:30 and 2:01:30, 10 requests go through. That is twice as many as allowed requests.
+	- Pros:
+		- Memory efficient.
+		- Easy to understand.
+		- Resetting available quota at the end of a unit time window fits certain use cases.
+	- Cons:
+		- Spike in traffic at the edges of a window could cause more requests than the allowed quota to go through.
+-
+- ### **Sliding window log algorithm**
+	- As discussed previously, the fixed window counter algorithm has a major issue: it allows more requests to go through at the edges of a window. The sliding window log algorithm fixes the issue. It works as follows:
+	- The algorithm keeps track of request timestamps. Timestamp data is usually kept in cache, such as sorted sets of Redis [8].
+	- When a new request comes in, remove all the outdated timestamps. Outdated timestamps are defined as those older than the start of the current time window.
+	- Add timestamp of the new request to the log.
+	- If the log size is the same or lower than the allowed count, a request is accepted. Otherwise, it is rejected.
+	- We explain the algorithm with an example as revealed in Figure 10.
+	  ![Image represents a flowchart illustrating a rate-limiting system that allows only two requests per minute.  The flowchart shows four stages (numbered 1-4).  Each stage is a rectangular box representing a processing unit.  Arrows indicate the flow of requests, with timestamps indicating the time of each request. Stage 1 receives a request at 1:00:01 and forwards it. Stage 2 receives this request at 1:00:30 (implying a processing delay) and forwards it.  Stage 3 receives a request at 1:00:50 and forwards it. Stage 4 receives requests at 1:00:01 and 1:00:30 (highlighted in red to indicate they are within the rate limit), and then receives another request at 1:01:40, which is processed.  The timestamps within each stage show the arrival times of requests at that stage. The title 'Allow 2 requests per minute' clarifies the system's constraint.  The diagram demonstrates how the system handles requests within and exceeding the rate limit, showing that requests exceeding the limit are still processed but with a delay.](https://bytebytego.com/images/courses/system-design-interview/design-a-rate-limiter/figure-4-10-AI6H6IIX.svg)
+	- Figure 10
+	- In this example, the rate limiter allows 2 requests per minute. Usually, Linux timestamps are stored in the log. However, human-readable representation of time is used in our example for better readability.
+	- The log is empty when a new request arrives at 1:00:01. Thus, the request is allowed.
+	- A new request arrives at 1:00:30, the timestamp 1:00:30 is inserted into the log. After the insertion, the log size is 2, not larger than the allowed count. Thus, the request is allowed.
+	- A new request arrives at 1:00:50, and the timestamp is inserted into the log. After the insertion, the log size is 3, larger than the allowed size 2. Therefore, this request is rejected even though the timestamp remains in the log.
+	- A new request arrives at 1:01:40. Requests in the range [1:00:40,1:01:40) are within the latest time frame, but requests sent before 1:00:40 are outdated. Two outdated timestamps, 1:00:01 and 1:00:30, are removed from the log. After the remove operation, the log size becomes 2; therefore, the request is accepted.
+	- Pros:
+		- Rate limiting implemented by this algorithm is very accurate. In any rolling window, requests will not exceed the rate limit.
+	- Cons:
+		- The algorithm consumes a lot of memory because even if a request is rejected, its timestamp might still be stored in memory.
+-
+- ### **Sliding window counter algorithm**
+	- The sliding window counter algorithm is a hybrid approach that combines the fixed window counter and sliding window log. The algorithm can be implemented by two different approaches. We will explain one implementation in this section and provide reference for the other implementation at the end of the section. Figure 11 illustrates how this algorithm works.
+	  ![Image represents a graphical depiction of a rolling rate limiter.  The horizontal axis represents time, divided into 'previous minute' and 'current minute' segments. The vertical axis represents the number of requests. A light-green rectangle labeled 'Rolling minute' spans across the boundary of the previous and current minutes, with 70% of its area in the previous minute and 30% in the current minute. This represents a rolling window of one minute. Within the rolling minute rectangle, several light-blue rectangles represent individual requests. A black rectangle encloses the requests within the previous minute, while a light-blue rectangle encloses the requests within the current minute. An arrow points from the top to the 'Rolling minute' rectangle, labeled 'Current time,' indicating the current position within the rolling window.  A text annotation states 'Rate limit: 5 requests/min,' indicating the maximum allowed requests per minute.  The diagram visually demonstrates how requests are counted within a rolling one-minute window to enforce the rate limit.](https://bytebytego.com/images/courses/system-design-interview/design-a-rate-limiter/figure-4-11-R2MDCFXL.svg)
+	- Figure 11
+	- Assume the rate limiter allows a maximum of 7 requests per minute, and there are 5 requests in the previous minute and 3 in the current minute. For a new request that arrives at a 30% position in the current minute, the number of requests in the rolling window is calculated using the following formula:
+	- Requests in current window **+** requests in the previous window  overlap percentage of the rolling window and previous window
+	- Using this formula, we get 3 + 5 * 0.7% = 6.5 request. Depending on the use case, the number can either be rounded up or down. In our example, it is rounded down to 6.
+	- Since the rate limiter allows a maximum of 7 requests per minute, the current request can go through. However, the limit will be reached after receiving one more request.
+	- Due to the space limitation, we will not discuss the other implementation here. Interested readers should refer to the reference material [9]. This algorithm is not perfect. It has pros and cons.
+	- Pros
+		- It smooths out spikes in traffic because the rate is based on the average rate of the previous window.
+		- Memory efficient.
+	- Cons
+		- It only works for not-so-strict look back window. It is an approximation of the actual rate because it assumes requests in the previous window are evenly distributed. However, this problem may not be as bad as it seems. According to experiments done by Cloudflare [10], only 0.003% of requests are wrongly allowed or rate limited among 400 million requests.
+-
+- ### When to use what ?
+	- ### 🚦 1️⃣ Fixed Window Counter
+		- ### ✅ Use When:
+			- System is simple
+			- Traffic is moderate
+			- Slight burst at window boundary is acceptable
+			- You want easiest implementation
+		- ### ❌ Don't Use When:
+			- Strict burst control is required
+			- Traffic spikes can overload backend
+			- High-scale distributed precision is needed
+		- 🗣 Interview line:
+			- > "I'll use Fixed Window for simplicity, but it allows boundary bursts."
+	- ### 🌊 2️⃣ Sliding Window Log
+		- ### ✅ Use When:
+			- Very strict accuracy required
+			- Low number of users
+			- You can afford memory cost
+		- ### ❌ Don't Use When:
+			- Millions of users
+			- High memory sensitivity
+			- High throughput system
+		- Why?
+			- Because it stores timestamp of every request.
+		- 🗣 Interview line:
+			- > "It's accurate but memory heavy."
+	- ### 🪣 3️⃣ Leaky Bucket
+		- ### ✅ Use When:
+			- You need constant output rate
+			- Downstream system must not receive spikes
+			- Traffic shaping / smoothing required
+			- Example: payment processing, DB writes, queue consumers
+		- ### ❌ Don't Use When:
+			- You want to allow short bursts
+			- It's user-facing API and UX matters
+			- You need flexible burst capacity
+		- Important:
+			- Leaky bucket enforces strict steady flow.
+		- 🗣 Interview line:
+			- > "Leaky Bucket is ideal when strict traffic smoothing is required."
+	- ### 🪙 4️⃣ Token Bucket (Most Practical)
+		- ### ✅ Use When:
+			- API rate limiting
+			- You want to allow short bursts
+			- You want average rate control
+			- Production distributed systems
+			- High-scale systems
+		- ### ❌ Don't Use When:
+			- Absolute constant output rate required
+			- Burst must be completely prevented
+		- Why industry prefers it:
+			- Smooth
+			- Flexible
+			- Scales well with Redis
+		- 🗣 Interview line:
+			- > "For production API rate limiting, I prefer Token Bucket."
+	- ### 🎯 When To Use Sliding Window Counter
+		- ### ✅ Use When:
+			- You need better accuracy than Fixed Window
+			- You want to reduce burst-at-boundary problem
+			- You can afford slightly more memory than Fixed Window
+			- Distributed Redis-based system
+		- ### ❌ Don't Use When:
+			- System is extremely simple
+			- Memory must be minimal
+			- Strict smoothing required (Leaky is better)
+-
+- ### 🎯 Simple Comparison (Interview Table in Words)
+	- Fixed Window → simple but bursty
+	- Sliding Log → accurate but heavy
+	- Leaky Bucket → smooth but strict
+	- Token Bucket → flexible and industry standard
