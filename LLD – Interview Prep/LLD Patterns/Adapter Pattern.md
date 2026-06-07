@@ -38,7 +38,7 @@
 	  ```tsx
 	  class StripeAdapter implements PaymentGateway {
 	    constructor(private stripe: StripePayment) {}
-
+	  
 	    pay(amount: number): void {
 	      this.stripe.makePayment(amount * 100);
 	    }
@@ -48,7 +48,7 @@
 	  ```tsx
 	  class PaymentService {
 	    constructor(private gateway: PaymentGateway) {}
-
+	  
 	    pay(amount: number) {
 	      this.gateway.pay(amount);
 	    }
@@ -58,7 +58,7 @@
 	  ```tsx
 	  const stripeGateway = new StripeAdapter(new StripePayment());
 	  const paymentService = new PaymentService(stripeGateway);
-
+	  
 	  paymentService.pay(500);
 	  ```
 -

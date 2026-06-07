@@ -20,7 +20,7 @@
 	- **Without Factory (messy):**
 	  ```tsx
 	  const method = "CARD";
-
+	  
 	  let strategy;
 	  if (method === "CARD") {
 	    strategy = new CardPayment();
@@ -87,13 +87,13 @@
 	  interface PaymentStrategy {
 	    pay(amount: number): void;
 	  }
-
+	  
 	  class CardPayment implements PaymentStrategy {
 	    pay(amount: number): void {
 	      console.log("Paid via Card:", amount);
 	    }
 	  }
-
+	  
 	  class UpiPayment implements PaymentStrategy {
 	    pay(amount: number): void {
 	      console.log("Paid via UPI:", amount);
@@ -121,7 +121,7 @@
 	- ```tsx
 	  class PaymentService {
 	    constructor(private paymentStrategy: PaymentStrategy) {}
-
+	  
 	    pay(amount: number) {
 	      this.paymentStrategy.pay(amount);
 	    }
@@ -131,10 +131,10 @@
 - ### Usage (runtime decision)
 	- ```tsx
 	  const methodFromAPI = "CARD"; // dynamic input
-
+	  
 	  const strategy = PaymentStrategyFactory.getStrategy(methodFromAPI);
 	  const paymentService = new PaymentService(strategy);
-
+	  
 	  paymentService.pay(500);
 	  ```
 -
