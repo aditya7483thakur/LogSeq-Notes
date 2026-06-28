@@ -10,10 +10,10 @@
 - [x]  Scalability (vertical vs horizontal)
 - [x]  Latency vs throughput
 - [x]  CAP theorem
-- [ ]  Consistency models
-- [ ]  Caching (read-through, write-through)
-- [ ]  Load balancing
-- [ ]  Rate limiting
+- [x]  Consistency models
+- [x]  Caching (read-through, write-through)
+- [x]  Load balancing
+- [x]  Rate limiting
   
   ---
 - ## 🟡 Phase 2: Core Components

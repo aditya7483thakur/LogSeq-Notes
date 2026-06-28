@@ -97,6 +97,19 @@
 		- Responsibility: execute work.
 	- Broker
 		- System managing queue internals.
+		- Producer
+		      |
+		      v
+		  +------------------+
+		  |     Broker               |
+		  |                                 |
+		  |  Queue A               |
+		  |  Queue B               |
+		  |  Queue C               |
+		  +------------------+
+		      |
+		      v
+		  Consumer
 		- Examples
 			- BullMQ -> Redis
 			- RabbitMQ
