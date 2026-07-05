@@ -405,6 +405,7 @@ collapsed:: true
 		  
 		  ---
 - ### Database Replication
+  collapsed:: true
 	- ## Why Replication Exists
 	  
 	  Replication means maintaining multiple copies of the same data across multiple database servers.
@@ -1017,10 +1018,331 @@ collapsed:: true
 		- Asynchronous replication prioritizes performance and availability.
 		- Failover improves system resilience.
 		- Replication is the foundation for read scaling in modern systems.
+- ### Database Sharding
+  collapsed:: true
+	- ## Why Sharding Exists
+		- Replication solves read scaling and high availability.
+		- Sharding is needed when a single primary still becomes the write bottleneck.
+		- As traffic grows:
+		  
+		  ```
+		  More Users
+		    ↓
+		  More Writes
+		    ↓
+		  Primary DB Bottleneck
+		  ```
+		- A single database eventually hits limits in:
+			- CPU
+			- Memory
+			- Storage
+			- Disk I/O
+			- Network throughput
+		- Sharding solves:
+			- Write scaling
+			- Storage scaling
+		- It does this by distributing data across multiple database servers.
+		  
+		  ---
+	- ## What Is Sharding
+		- Sharding is the process of splitting data across multiple database servers.
+		- Each shard stores only a subset of the total data.
+		- Example:
+		  
+		  ```
+		  Single Database
+		  
+		  Users 1 - 10M
+		  ```
+		  
+		  Becomes:
+		  
+		  ```
+		  Shard 1
+		  Users 1 - 3M
+		  
+		  Shard 2
+		  Users 3M - 6M
+		  
+		  Shard 3
+		  Users 6M - 10M
+		  ```
+		- Result:
+			- Storage is distributed
+			- Writes are distributed
+			- Load is distributed
+			  
+			  ---
+	- ## Replication vs Sharding
+		- Replication means same data, multiple copies.
+		- Sharding means different data, different databases.
+		- Replication is mainly for:
+			- Read scaling
+			- High availability
+			- Disaster recovery
+		- Sharding is mainly for:
+			- Write scaling
+			- Storage scaling
+			  
+			  ---
+	- ## Primary Goal Of Sharding
+		- Sharding exists because eventually one database cannot handle all writes.
+		- Example:
+		  
+		  ```
+		  100,000 Writes/sec
+		  ```
+		- Instead of upgrading a single server forever, we distribute the workload across multiple databases.
+		  
+		  ---
+	- ## Shard Key
+		- The shard key is the field used to decide which shard stores a record.
+		- Without a shard key, the system cannot decide where data should go.
+		- Example shard keys:
+			- userId
+			- tenantId
+			- organizationId
+			- customerId
+		- Example:
+		  
+		  ```
+		  Shard 1
+		  Shard 2
+		  Shard 3
+		  ```
+		  
+		  Rule:
+		  
+		  ```
+		  userId % 3
+		  ```
+		  
+		  User 10 goes to Shard 1, user 11 goes to Shard 2, and user 12 goes to Shard 3.
+		  
+		  ---
+	- ## Characteristics Of A Good Shard Key
+		- ### 1. High Cardinality
+			- Cardinality means the number of unique values.
+			- Good shard keys:
+				- userId
+				- organizationId
+				- customerId
+			- Bad shard keys:
+				- gender
+				- status
+				- country
+		- ### 2. Even Distribution
+			- Goal:
+			  
+			  ```
+			  Shard 1 = 33%
+			  
+			  Shard 2 = 33%
+			  
+			  Shard 3 = 34%
+			  ```
+			- Avoid:
+			  
+			  ```
+			  Shard 1 = 90%
+			  
+			  Shard 2 = 5%
+			  
+			  Shard 3 = 5%
+			  ```
+		- ### 3. Matches Query Patterns
+			- If most requests are for all clusters of a specific organization, then organizationId is a good shard key.
+			  
+			  ---
+	- ## Sharding Strategies
+		- ### Range-Based Sharding
+			- Data is divided by ranges.
+			- Example:
+			  
+			  ```
+			  1 - 1M     → Shard 1
+			  
+			  1M - 2M    → Shard 2
+			  
+			  2M - 3M    → Shard 3
+			  ```
+			- Advantages:
+				- Easy to understand
+				- Easy to implement
+			- Disadvantages:
+				- Can create hot shards
+				- If IDs continuously increase, the latest shard gets most writes
+		- ### Hash-Based Sharding
+			- A hash function determines the shard.
+			- Example:
+			  
+			  ```
+			  hash(userId) % 3
+			  ```
+			- Result:
+			  
+			  ```
+			  User 1 → Shard 1
+			  
+			  User 2 → Shard 2
+			  
+			  User 3 → Shard 3
+			  
+			  User 4 → Shard 1
+			  ```
+			- Advantages:
+				- Better distribution
+				- Reduced hot shards
+				- Better write balancing
+			- Disadvantages:
+				- Harder rebalancing
+				- Range queries become difficult
+				  
+				  ---
+	- ## Shard Router
+		- Applications usually do not manually determine shards.
+		- A router handles it.
+		- Responsibilities:
+			- Route reads
+			- Route writes
+			- Determine the target shard
+			  
+			  ```
+			  Application
+			    |
+			  Shard Router
+			    |
+			  -------------------
+			  |        |        |
+			  v        v        v
+			  
+			  S1       S2       S3
+			  ```
+			  
+			  ---
+	- ## Hot Shards
+		- A hot shard receives significantly more traffic than the others.
+		- Example:
+		  
+		  ```
+		  Shard 1
+		  95% Traffic
+		  
+		  Shard 2
+		  3% Traffic
+		  
+		  Shard 3
+		  2% Traffic
+		  ```
+		- This usually indicates a bad shard key.
+		- Why hot shards are dangerous:
+			- Even if most shards are healthy, one overloaded shard can become the bottleneck for the entire system.
+			  
+			  ---
+	- ## Cross-Shard Queries
+		- Before sharding, queries are simple because everything is in one database.
+		- After sharding, the system must know which shard contains the data.
+		- If it does not know, it must query multiple shards and merge results.
+		  
+		  ```
+		  Query Shard 1
+		  
+		  Query Shard 2
+		  
+		  Query Shard 3
+		  ```
+		  
+		  ---
+	- ## Cross-Shard Joins
+		- Example:
+		  
+		  ```
+		  Users → Shard 1
+		  
+		  Orders → Shard 2
+		  ```
+		- Now a join between users and orders requires communication between multiple databases.
+		- This is much more complex than a single-database join.
+		  
+		  ---
+	- ## Rebalancing
+		- Rebalancing is the process of moving data when the number of shards changes.
+		- Example:
+		  
+		  ```
+		  3 Shards
+		  ```
+		  
+		  becomes:
+		  
+		  ```
+		  4 Shards
+		  ```
+		- Data must be moved from one shard to another.
+		- Why rebalancing is difficult:
+			- Large data movement
+			- Operational risk
+			- Possible performance impact
+			- Temporary system instability
+			  
+			  ---
+	- ## Real World Example
+		- Imagine a Kubernetes provisioning platform growing to 50 million clusters.
+		- A single database can no longer handle all writes.
+		- You choose organizationId as the shard key.
+		- Hash(organizationId) determines the shard.
+		- Benefits:
+			- Writes are distributed evenly
+			- Better scalability
+			- Faster organization-level queries
+			  
+			  ---
+	- ## Tradeoffs
+		- ### Advantages
+			- Write scaling
+			- Storage scaling
+			- Horizontal growth
+			- Better throughput
+			- Supports massive datasets
+		- ### Disadvantages
+			- Operational complexity
+			- Rebalancing challenges
+			- Cross-shard queries
+			- Cross-shard joins
+			- Hot shards
+			- Shard key selection becomes critical
+			  
+			  ---
+	- ## Interview Cheat Sheet
+		- ### Replication Solves
+			- Read scaling
+			- High availability
+		- ### Sharding Solves
+			- Write scaling
+			- Storage scaling
+		- ### Most Important Design Decision
+		  
+		  ```
+		  Choosing The Shard Key
+		  ```
+		- ### Good Shard Keys
+			- userId
+			- tenantId
+			- organizationId
+			- customerId
+		- ### Common Problems
+			- Hot shards
+			- Cross-shard queries
+			- Cross-shard joins
+			- Rebalancing
+			  
+			  ---
+	- ## Key Takeaways
+		- Sharding distributes data across multiple databases.
+		- It primarily solves write scaling and storage scaling.
+		- The shard key determines where data is stored.
+		- A bad shard key can create hot shards and uneven distribution.
+		- Hash-based sharding generally provides better distribution than range-based sharding.
+		- Sharding improves scalability but significantly increases system complexity.
+		- Replication and sharding solve different problems and are commonly used together in large-scale systems.
 -
-- 1. Replication (VERY IMPORTANT)
-  2. Read Replicas
-  3. Primary-Replica Architecture
-  4. Sharding
-  5. Partitioning
-  6. Indexing
