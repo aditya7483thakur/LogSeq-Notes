@@ -231,6 +231,7 @@
 			  ```
 			- So next time, A doesn’t need to broadcast again—it already knows the MAC.
 - ### Internet Protocol (IP) & Related Tools
+  collapsed:: true
 	- ### 🧠 1. What is an IP?
 	  collapsed:: true
 		- **IP (Internet Protocol)** is the **unique address and set of rules** that allow devices to identify and communicate with each other over a network.

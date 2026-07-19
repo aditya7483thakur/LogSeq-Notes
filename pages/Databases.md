@@ -1708,3 +1708,348 @@ collapsed:: true
 	  4. Sharding
 	  5. Partitioning
 	  6. Indexing
+- ### Indexing
+	- ## Introduction to Indexing
+	  collapsed:: true
+		- ## 1. Why Indexing Exists
+			- As database tables grow larger, searching for data becomes slower.
+			  
+			  Without an efficient lookup mechanism, the database may need to examine every row to find the required data.
+			  
+			  Indexing exists to make data retrieval faster by allowing the database to quickly locate rows instead of scanning the entire table.
+			  
+			  ---
+		- ## 2. Full Table Scan
+			- A **Full Table Scan** (or Sequential Scan) occurs when the database checks every row in a table to find the requested data.
+			  
+			  Example:
+			  
+			  ```
+			  SELECT *
+			  FROM users
+			  WHERE email = 'john@example.com';
+			  ```
+			  
+			  Without an index, the database scans rows one by one until it finds a match.
+			  
+			  For small tables this is acceptable, but for large tables it becomes expensive and increases query latency.
+			  
+			  ---
+		- ## 3. What is an Index?
+			- An **Index** is a separate data structure maintained by the database that stores indexed column values along with references to the corresponding rows.
+			  
+			  Instead of searching the entire table, the database searches the index first and then directly retrieves the required row.
+			  
+			  ---
+		- ## 4. Index vs Table
+			- ### Table
+			  
+			  Stores the complete data.
+			  
+			  Example:
+			  
+			  ```
+			  id
+			  name
+			  email
+			  phone
+			  address
+			  ```
+			- ### Index
+			  
+			  Stores:
+			- Indexed column(s)
+			- Reference (Pointer) to the actual row
+			  
+			  The index is much smaller than the table, making it significantly faster to search.
+			  
+			  ---
+		- ## 5. What is a Pointer?
+			- A **Pointer** (also called a **Row Reference**) tells the database where the actual row is stored.
+			  
+			  Conceptually:
+			  
+			  ```
+			  amit@gmail.com
+			      ↓
+			  Pointer
+			      ↓
+			  Actual Row
+			  ```
+			  
+			  Internally, this pointer is typically a reference to the row's physical location (such as its disk location or an internal row identifier).
+			  
+			  You don't need to know its exact implementation—just think of it as the database saying: 
+			  
+			  **"The data you're looking for is stored over here."**
+			  
+			  ---
+		- ## 6. How Indexes Improve Performance
+			- Without an index:
+			  
+			  ```
+			  Query
+			   ↓
+			  Scan Entire Table
+			   ↓
+			  Find Matching Row
+			  ```
+			  
+			  With an index:
+			  
+			  ```
+			  Query
+			   ↓
+			  Search Index
+			   ↓
+			  Follow Pointer
+			   ↓
+			  Fetch Matching Row
+			  ```
+			  
+			  Instead of checking every row, the database uses the index to quickly locate the required data, significantly reducing query time.
+			  
+			  ---
+		- ## 7. Read Path: Without vs With an Index
+			- ### Without an Index
+			  
+			  ```
+			  Application
+			      │
+			      ▼
+			  Database
+			      │
+			      ▼
+			  Full Table Scan
+			      │
+			      ▼
+			  Return Matching Row
+			  ```
+			- ### With an Index
+			  
+			  ```
+			  Application
+			      │
+			      ▼
+			  Database
+			      │
+			      ▼
+			  Search Index
+			      │
+			      ▼
+			  Follow Pointer
+			      │
+			      ▼
+			  Fetch Row
+			      │
+			      ▼
+			  Return Result
+			  ```
+	- ## Tradeoffs & Best Practices
+		- ## 1. Read vs Write Tradeoff
+			- Indexes significantly improve **read performance** by allowing the database to quickly locate rows.
+			  
+			  However, every **INSERT**, **UPDATE**, or **DELETE** operation must also update the corresponding indexes.
+			  
+			  Example:
+			  
+			  ```
+			  INSERT INTO users (...)
+			  ```
+			  
+			  The database must:
+			  
+			  ```
+			  1. Insert the row into the table
+			  2. Update every affected index
+			  ```
+			  
+			  Therefore:
+			- **More Indexes → Faster Reads**
+			- **More Indexes → Slower Writes**
+			  
+			  Choosing the right number of indexes is a balance between read and write performance.
+			  
+			  ---
+		- ## 2. Storage Overhead
+			- Indexes are stored separately from the table and consume additional disk space.
+			  
+			  For every indexed column, the database maintains an extra data structure.
+			  
+			  Example:
+			  
+			  ```
+			  Users Table
+			      +
+			  Email Index
+			      +
+			  Phone Index
+			      +
+			  Created_at Index
+			  ```
+			  
+			  As the number of indexes increases:
+			- Storage usage increases.
+			- Backup size increases.
+			- Index maintenance cost increases.
+			  
+			  ---
+		- ## 3. Index Maintenance
+			- Indexes are automatically maintained by the database.
+			  
+			  Whenever data changes, the corresponding indexes must also be updated.
+			  
+			  Operations that require index maintenance:
+			- INSERT
+			- UPDATE
+			- DELETE
+			  
+			  Developers do not manually update indexes, but they should understand that maintaining many indexes increases write overhead.
+			  
+			  ---
+		- ## 4. When to Create an Index
+			- Indexes are most beneficial for columns that are frequently used in:
+			- ### Filtering
+			  
+			  ```
+			  WHERE email = ?
+			  ```
+			- ### Joins
+			  
+			  ```
+			  JOIN users
+			  ON users.id = orders.user_id
+			  ```
+			- ### Sorting
+			  
+			  ```
+			  ORDER BY created_at
+			  ```
+			- ### Grouping
+			  
+			  ```
+			  GROUP BY category
+			  ```
+			  
+			  In general, create indexes on columns that are queried frequently.
+			  
+			  ---
+		- ## 5. When NOT to Create an Index
+			- Avoid creating indexes when:
+				- ### The table is very small
+				  A full table scan is often faster than using an index.
+				  
+				  ---
+				- ### The column has very few unique values
+				  
+				  Example:
+				  
+				  ```
+				  gender
+				  
+				  Male
+				  Female
+				  ```
+				  
+				  Since a large portion of the table matches each value, the index provides little benefit.
+				  
+				  *(We'll later learn this concept as **Low Selectivity**.)*
+				  
+				  ---
+				- ### The column is rarely queried
+				  
+				  Creating an index that is almost never used only wastes storage and slows down writes.
+				  
+				  ---
+				- ### The table experiences heavy write traffic
+				  
+				  If a table receives frequent inserts or updates but very few reads, excessive indexing can reduce overall performance.
+-
+- Indexing
+  │
+  ├── 1. Introduction to Indexing
+  │     ├── Why Indexing Exists
+  │     ├── Full Table Scan
+  │     ├── What is an Index?
+  │     ├── Index vs Table
+  │     ├── How Indexes Improve Performance
+  │     └── Read Path With vs Without Index
+  │
+  ├── 2. Tradeoffs & Best Practices
+  │     ├── Read vs Write Tradeoff
+  │     ├── Storage Overhead
+  │     ├── Index Maintenance
+  │     ├── When to Create an Index
+  │     └── When NOT to Create an Index
+  │
+  ├── 3. B+ Tree (Index Internals)
+  │     ├── Why B+ Trees?
+  │     ├── Structure
+  │     ├── Search
+  │     ├── Insert
+  │     ├── Delete
+  │     └── Why Not BST / Hash Table?
+  │
+  ├── 4. Types of Indexes
+  │     ├── Clustered Index
+  │     ├── Non-Clustered Index
+  │     ├── Unique Index
+  │     ├── Composite Index
+  │     ├── Covering Index
+  │     └── Hash Index (Brief)
+  │
+  ├── 5. Composite & Covering Indexes
+  │     ├── Leftmost Prefix Rule
+  │     ├── Column Order
+  │     ├── Covering Index
+  │     └── Real Examples
+  │
+  ├── 6. Index Optimization
+  │     ├── Cardinality
+  │     ├── Selectivity
+  │     ├── Why Indexes Are Ignored
+  │     └── Optimizer Decisions
+  │
+  ├── 7. Common Interview Questions
+  │
+  └── 8. Key Takeaways
+- ## 1. Indexing ⭐⭐⭐⭐⭐ 
+  
+  This is one of the most important topics.
+  
+  You should understand:
+- Why indexes exist
+- B+ Trees
+- Clustered vs Non-clustered Index
+- Composite Indexes
+- Covering Indexes
+- Index Selectivity
+- Why too many indexes are bad
+- When indexes are not used
+  
+  This is asked in almost every backend interview.
+  
+  ---
+- ## 2. Connection Pooling ⭐⭐⭐
+  
+  Small topic.
+  
+  30–40 minutes.
+  
+  But interviewers love asking:
+  
+  > 
+  
+  Why don't we open a new DB connection for every request?
+  
+  ---
+- ## 3. Distributed Transactions ⭐⭐
+  
+  Not in depth.
+  
+  Just enough to know:
+- Why normal transactions don't work across multiple services
+- What 2PC is (high level)
+- Why Saga Pattern exists
+  
+  You don't need to master it for SDE-1.

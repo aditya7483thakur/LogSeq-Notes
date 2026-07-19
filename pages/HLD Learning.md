@@ -1,7 +1,40 @@
 - [[Fundamentals of HLD]]
 - [[Core Components]]
 -
--
+- Phase 2 (Core Components)
+- Database
+  │
+  ├── ✅ SQL vs NoSQL
+  ├── ✅ Replication
+  ├── ✅ Sharding
+  ├── ✅ Partitioning
+  ├── ⏳ Indexing
+  ├── ⏳ Connection Pooling
+  └── ⏳ Distributed Transactions (basic)
+- ↓
+- Redis
+  │
+  ├── Redis Fundamentals
+  ├── Caching with Redis
+  ├── Sessions
+  ├── Rate Limiting
+  ├── Pub/Sub
+  ├── Streams
+  └── BullMQ Internals
+- ↓
+- Message Queues
+  │
+  ├── Queue Fundamentals
+  ├── Reliability
+  ├── Kafka
+  ├── Consumer Groups
+  └── Kafka vs RabbitMQ vs BullMQ
+- ↓
+- CDN
+- ↓
+- API Gateway
+- ↓
+- System Design Patterns
 -
 - ### Core Components
 - ## 🟢 Phase 1: Fundamentals (MOST IMPORTANT)
