@@ -1,4 +1,4 @@
-- Ports, Interfaces, fixed Ip, floating Ip, Reserved Ip
+- Ports, Interfaces
   collapsed:: true
 	- ## 1. Core Mental Model
 	  
@@ -15,9 +15,32 @@
 	  ```
 	  
 	  ---
-	- # 2. What is a Port?
+	- # 2. What is a Port? 
 	  
-	  In OpenStack:
+	  A port (network interface) is the endpoint through which a device communicates with a network.
+	  
+	  Think of it as a **socket (hole)** on a device.
+	  
+	  ```
+	  Computer
+	  
+	  +---------------------+
+	  |                     |
+	  |   [ Ethernet Port ] |  ← Port / Interface
+	  |                     |
+	  +---------------------+
+	  ```
+	  
+	  A **port is NOT a cable.**
+	  
+	  The cable connects two ports.
+	  
+	  ```
+	  Computer                    Router
+	  
+	  [ Port ] ===== Cable ===== [ Port ]
+	  ```
+	- In OpenStack:
 	  
 	  ```
 	  Port ≈ Virtual Network Interface (NIC)
@@ -32,8 +55,18 @@
 	- DHCP service
 	- Firewall
 	- etc.
-	  
-	  Example:
+	- Security groups are attached on the port.
+	- ```
+	  VM
+	   │
+	   ▼
+	  Port
+	  ├── Fixed IP
+	  ├── MAC
+	  ├── Security Groups
+	  └── Network
+	  ```
+	- Example:
 	  
 	  ```
 	  {
@@ -75,7 +108,77 @@
 	  OpenStack represents virtual interfaces using Neutron Ports.
 	- Interfaces send/receive packets.
 	- ---
-	- # 4. What is a Fixed IP?
+	- # 4. Why can a Port have Multiple Fixed IPs?
+		- ### Key Idea
+		  
+		  A **Neutron Port** (Virtual Network Interface) owns **Fixed IPs**.
+		  
+		  Normally, a port has **one Fixed IP**.
+		  
+		  However, a port **can** have multiple Fixed IPs because a network interface can legally have multiple IP addresses.
+		  
+		  Example:
+		  
+		  ```
+		  "fixed_ips": [
+		  {
+		    "subnet_id": "subnet-1",
+		    "ip_address": "10.0.0.5"
+		  },
+		  {
+		    "subnet_id": "subnet-2",
+		    "ip_address": "192.168.1.10"
+		  }
+		  ]
+		  ```
+		  
+		  This means:
+		  
+		  ```
+		  One Port (Virtual Interface)
+		  
+		  ├── Fixed IP : 10.0.0.5
+		  └── Fixed IP : 192.168.1.10
+		  ```
+		  
+		  The port owns both IP addresses.
+		  
+		  ---
+		- ### ⚠️ Important
+		  
+		  Although OpenStack supports multiple Fixed IPs on a port, **router interfaces are usually created with one port per connected subnet**.
+		- OpenStack intentionally creates one router interface per subnet because it makes networking resources (DHCP, routing, security, tenant isolation, lifecycle management, etc.) much simpler and less error-prone to manage.
+		- So the common architecture is:
+		  
+		  ```
+		  Router
+		  
+		  ├── Port A
+		  │     └── 10.0.0.1 (Subnet A)
+		  │
+		  ├── Port B
+		  │     └── 192.168.1.1 (Subnet B)
+		  │
+		  └── Port C
+		      └── 172.16.0.1 (Subnet C)
+		  ```
+		  
+		  instead of
+		  
+		  ```
+		  Router
+		  
+		  └── One Port
+		      ├── 10.0.0.1
+		      ├── 192.168.1.1
+		      └── 172.16.0.1
+		  ```
+		  
+		  This is mainly a **design choice** that keeps routing, DHCP, security groups, and tenant isolation simple.
+	- ---
+- fixed Ip, floating Ip, Reserved Ip
+  collapsed:: true
+	- # 1. What is a Fixed IP?
 	  
 	  A fixed IP is:
 	  
@@ -97,41 +200,7 @@
 	- Belongs to a subnet
 	  
 	  ---
-	- # 5. Why can a Port have Multiple Fixed IPs?
-	  
-	  A single interface can legally own multiple IP addresses.
-	  
-	  Example:
-	  
-	  ```
-	  "fixed_ips": [
-	  {
-	    "subnet_id": "subnet-1",
-	    "ip_address": "10.0.0.5"
-	  },
-	  {
-	    "subnet_id": "subnet-2",
-	    "ip_address": "192.168.1.10"
-	  }
-	  ]
-	  ```
-	  
-	  Meaning:
-	  
-	  ```
-	  This interface owns:
-	  - 10.0.0.5 in subnet-1
-	  - 192.168.1.10 in subnet-2
-	  ```
-	  
-	  NOT:
-	  
-	  ```
-	  Port itself is the subnet
-	  ```
-	  
-	  ---
-	- # 6. Who Handles Traffic Logic?
+	- # 2. Who Handles Traffic Logic?
 	  
 	  The networking logic is handled by the component itself:
 	  
@@ -149,7 +218,7 @@
 	  ```
 	  
 	  ---
-	- # 7. Router + Port Relationship
+	- # 3. Router + Port Relationship
 	  
 	  Routers connect subnets using ports/interfaces.
 	  
@@ -190,7 +259,7 @@
 		     ├── Port2 -> 192.168.1.1 -> subnet B
 		     └── Port3 -> 172.16.0.1 -> subnet C
 	- ---
-	- # 8. Floating IP vs Fixed IP
+	- # 4. Floating IP vs Fixed IP
 	- ## Fixed IP
 	  
 	  ```
@@ -224,7 +293,7 @@
 	  ```
 	  
 	  ---
-	- # 9. Why Floating IP Links to Fixed IP
+	- # 5. Why Floating IP Links to Fixed IP
 	  
 	  Because OpenStack needs to know:
 	  
@@ -246,7 +315,7 @@
 	  ```
 	  
 	  ---
-	- # 10. Packet Flow
+	- # 6. Packet Flow
 	  
 	  ```
 	  Internet
@@ -265,7 +334,7 @@
 	  ```
 	  
 	  ---
-	- # 11. device_owner in Ports
+	- # 7. device_owner in Ports
 	  
 	  `device_owner` tells which component owns the port.
 	  
@@ -279,7 +348,7 @@
 	  | network:dhcp | DHCP service |
 	  
 	  ---
-	- # 12. Router Interface Discovery Logic
+	- # 8. Router Interface Discovery Logic
 	  
 	  To find router connected to subnet:
 	- Fetch ports
@@ -293,7 +362,7 @@
 	  ```
 	  
 	  ---
-	- # 13. Why `.1` is Often Preferred
+	- # 9. Why `.1` is Often Preferred
 	  
 	  Many environments use:
 	  
@@ -318,7 +387,7 @@
 	  ```
 	  
 	  because `.1` is convention, not guarantee.
-	- # 14. Reserved Ip
+	- # 10. Reserved Ip
 		- A reserved IP is most commonly an internal/private IP reserved for infrastructure purposes.
 		  
 		  Example from your subnet:
@@ -608,3 +677,27 @@
 	  Security Group = simplified cloud firewall
 	  Firewall = broader and more powerful network security/routing system
 	  ```
+- OpenStack ↔ AWS
+  collapsed:: true
+	- | **OpenStack** | **AWS Equivalent** | **Purpose / Usage** |
+	  | ---- | ---- | ---- |
+	  | **Nova** | **EC2** | Creates and manages Virtual Machines. |
+	  | **Flavor** | **EC2 Instance Type** | Defines CPU, RAM and other compute resources for a VM. |
+	  | **Image (Glance)** | **AMI (Amazon Machine Image)** | OS template used to launch a VM/EC2. |
+	  | **Neutron Network** | **VPC Network** | Virtual network where instances communicate. |
+	  | **Neutron Subnet** | **VPC Subnet** | IP range inside a network. |
+	  | **Neutron Port** | **ENI (Elastic Network Interface)** | Virtual Network Interface attached to a VM. Owns MAC, IPs, Security Groups. |
+	  | **Fixed IP** | **Private IP** | Internal IP used for communication inside the cloud network. |
+	  | **Floating IP** | **Elastic IP / Public IP** | Publicly reachable IP mapped to a private IP. |
+	  | **Router** | **VPC Router + Route Tables** | Routes traffic between subnets and external networks. |
+	  | **External Network** | **Internet Gateway (IGW)** | Connects private cloud networks to the Internet. |
+	  | **Security Group** | **Security Group** | Stateful virtual firewall attached to interfaces. |
+	  | **Network ACL** | **Network ACL** | Stateless subnet-level firewall (AWS has this separately). |
+	  | **Cinder Volume** | **EBS Volume** | Persistent block storage attached to VMs. |
+	  | **Swift** | **S3** | Object storage for files, backups, images, logs, etc. |
+	  | **Keystone** | **IAM** | Identity, authentication and authorization. |
+	  | **Horizon** | **AWS Console** | Web UI to manage cloud resources. |
+	  | **Heat** | **CloudFormation** | Infrastructure as Code (IaC). |
+	  | **Telemetry (Ceilometer)** | **CloudWatch** | Metrics, monitoring and alarms. |
+	  | **Octavia** | **Elastic Load Balancer (ALB/NLB)** | Distributes incoming traffic across instances. |
+	  | **Designate** | **Route 53** | Managed DNS service. |

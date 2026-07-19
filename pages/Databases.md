@@ -15,7 +15,6 @@ collapsed:: true
 		- Query flexibility
 		- Relationships
 		- Operational complexity
-
 		- 1. Replication (VERY IMPORTANT)
 		- Examples:
 			- PostgreSQL
@@ -1345,16 +1344,16 @@ collapsed:: true
 		- Sharding improves scalability but significantly increases system complexity.
 		- Replication and sharding solve different problems and are commonly used together in large-scale systems.
 - ### Database Partitioning
+  collapsed:: true
 	- ## Why Partitioning Exists
 		- As data grows, a single table can become extremely large.
 		- Example:
-
-			```
-			Orders Table
-
-			1 Billion Rows
-			```
-
+		  
+		  ```
+		  Orders Table
+		  
+		  1 Billion Rows
+		  ```
 		- Problems:
 			- Queries become slower
 			- Indexes become larger
@@ -1362,30 +1361,29 @@ collapsed:: true
 			- Backups take longer
 			- Data management becomes harder
 		- Partitioning solves these problems by dividing a large table into smaller pieces while still appearing as a single table to applications.
-
-		---
+		  
+		  ---
 	- ## What Is Partitioning
 		- Partitioning is the process of splitting a large table into smaller logical parts called partitions.
 		- Example:
-
-			```
-			Orders Table
-			(1 Billion Rows)
-			```
-
-			Becomes:
-
-			```
-			Orders
-
-			├── Partition 2023
-			├── Partition 2024
-			└── Partition 2025
-			```
-
+		  
+		  ```
+		  Orders Table
+		  (1 Billion Rows)
+		  ```
+		  
+		  Becomes:
+		  
+		  ```
+		  Orders
+		  
+		  ├── Partition 2023
+		  ├── Partition 2024
+		  └── Partition 2025
+		  ```
 		- Applications still query the same table name, but internally the database accesses only relevant partitions.
-
-		---
+		  
+		  ---
 	- ## Benefits Of Partitioning
 		- ### Faster Queries
 			- Instead of scanning 1 billion rows, the database may scan only the relevant partition.
@@ -1393,8 +1391,8 @@ collapsed:: true
 			- Backups, archiving, and deleting old data can be performed on specific partitions.
 		- ### Better Manageability
 			- Large datasets become easier to organize.
-
-		---
+			  
+			  ---
 	- ## Partition Key
 		- A partition key determines which partition stores a row.
 		- Common examples:
@@ -1403,283 +1401,260 @@ collapsed:: true
 			- country
 			- status
 		- Choosing the right partition key is critical.
-
-		---
+		  
+		  ---
 	- ## Characteristics Of A Good Partition Key
 		- ### 1. Matches Query Patterns
 			- Example query pattern:
-
-				```
-				WHERE created_at >= '2025-01-01'
-				```
-
+			  
+			  ```
+			  WHERE created_at >= '2025-01-01'
+			  ```
 			- Good partition key:
 				- created_at
 		- ### 2. Distributes Data Reasonably
 			- Avoid extremely uneven partition sizes.
 		- ### 3. Is Frequently Used In Filters
 			- The database can skip irrelevant partitions when the partition key appears in queries.
-
-		---
+			  
+			  ---
 	- ## Partitioning Strategies
 		- ### Horizontal Partitioning
 			- Most common form of partitioning.
 			- Rows are split across partitions.
 			- Example:
-
-				```
-				Orders
-
-				Partition 1
-				Rows 1 - 1M
-
-				Partition 2
-				Rows 1M - 2M
-
-				Partition 3
-				Rows 2M - 3M
-				```
-
+			  
+			  ```
+			  Orders
+			  
+			  Partition 1
+			  Rows 1 - 1M
+			  
+			  Partition 2
+			  Rows 1M - 2M
+			  
+			  Partition 3
+			  Rows 2M - 3M
+			  ```
 			- All partitions have the same columns.
-
 		- ### Vertical Partitioning
 			- Columns are split across tables.
 			- Example:
-
-				```
-				Users
-
-				id
-				name
-				email
-				bio
-				profile_picture
-				preferences
-				```
-
-				Becomes:
-
-				```
-				Users_Basic
-
-				id
-				name
-				email
-
-				Users_Profile
-
-				id
-				bio
-				profile_picture
-				preferences
-				```
-
+			  
+			  ```
+			  Users
+			  
+			  id
+			  name
+			  email
+			  bio
+			  profile_picture
+			  preferences
+			  ```
+			  
+			  Becomes:
+			  
+			  ```
+			  Users_Basic
+			  
+			  id
+			  name
+			  email
+			  
+			  Users_Profile
+			  
+			  id
+			  bio
+			  profile_picture
+			  preferences
+			  ```
 			- Benefits:
 				- Smaller rows
 				- Faster common queries
 				- Better cache efficiency
-
 		- ### Range Partitioning
 			- Data is divided using ranges.
 			- Example:
-
-				```
-				2023 → Partition 1
-
-				2024 → Partition 2
-
-				2025 → Partition 3
-				```
-
+			  
+			  ```
+			  2023 → Partition 1
+			  
+			  2024 → Partition 2
+			  
+			  2025 → Partition 3
+			  ```
 			- Advantages:
 				- Easy to understand
 				- Excellent for time-series data
 			- Disadvantages:
 				- Can create uneven partitions
 				- Latest partition may receive most writes
-
 		- ### Hash Partitioning
 			- A hash function determines the partition.
 			- Example:
-
-				```
-				hash(userId) % 4
-				```
-
+			  
+			  ```
+			  hash(userId) % 4
+			  ```
 			- Result:
-
-				```
-				User 1 → Partition 1
-
-				User 2 → Partition 2
-
-				User 3 → Partition 3
-
-				User 4 → Partition 4
-				```
-
+			  
+			  ```
+			  User 1 → Partition 1
+			  
+			  User 2 → Partition 2
+			  
+			  User 3 → Partition 3
+			  
+			  User 4 → Partition 4
+			  ```
 			- Advantages:
 				- Better distribution
 				- Reduces hotspots
 			- Disadvantages:
 				- Harder debugging
 				- Range queries become difficult
-
 		- ### List Partitioning
 			- Data is partitioned based on predefined values.
 			- Example:
-
-				```
-				India → Partition 1
-
-				USA → Partition 2
-
-				UK → Partition 3
-				```
-
+			  
+			  ```
+			  India → Partition 1
+			  
+			  USA → Partition 2
+			  
+			  UK → Partition 3
+			  ```
 			- Advantages:
 				- Easy to understand
 				- Useful for regional datasets
 			- Disadvantages:
 				- Uneven distribution can occur
-
-		---
+				  
+				  ---
 	- ## Partition Pruning
 		- Partition pruning is one of the biggest benefits of partitioning.
 		- The database skips irrelevant partitions.
 		- Without partitioning:
-
-			```
-			SELECT *
-			FROM orders
-			WHERE year = 2025
-			```
-
-			Database scans all data.
+		  
+		  ```
+		  SELECT *
+		  FROM orders
+		  WHERE year = 2025
+		  ```
+		  
+		  Database scans all data.
 		- With partitioning:
-
-			```
-			Orders_2023
-			Orders_2024
-			Orders_2025
-			```
-
-			Database only scans Orders_2025.
-
-		---
+		  
+		  ```
+		  Orders_2023
+		  Orders_2024
+		  Orders_2025
+		  ```
+		  
+		  Database only scans Orders_2025.
+		  
+		  ---
 	- ## PostgreSQL Example
 		- Create a partitioned table:
-
-			```sql
-			CREATE TABLE orders (
-			  order_id BIGINT,
-			  order_date DATE,
-			  amount DECIMAL
-			) PARTITION BY RANGE (order_date);
-			```
-
+		  
+		  ```sql
+		  CREATE TABLE orders (
+		   order_id BIGINT,
+		   order_date DATE,
+		   amount DECIMAL
+		  ) PARTITION BY RANGE (order_date);
+		  ```
 		- Create partitions:
-
-			```sql
-			CREATE TABLE orders_2024 PARTITION OF orders FOR VALUES FROM ('2024-01-01') TO ('2025-01-01');
-			CREATE TABLE orders_2025 PARTITION OF orders FOR VALUES FROM ('2025-01-01') TO ('2026-01-01');
-			```
-
+		  
+		  ```sql
+		  CREATE TABLE orders_2024 PARTITION OF orders FOR VALUES FROM ('2024-01-01') TO ('2025-01-01');
+		  CREATE TABLE orders_2025 PARTITION OF orders FOR VALUES FROM ('2025-01-01') TO ('2026-01-01');
+		  ```
 		- Insert rows:
-
-			```sql
-			INSERT INTO orders VALUES (1, '2024-06-10', 1000);
-			INSERT INTO orders VALUES (2, '2025-02-10', 2000);
-			```
-
+		  
+		  ```sql
+		  INSERT INTO orders VALUES (1, '2024-06-10', 1000);
+		  INSERT INTO orders VALUES (2, '2025-02-10', 2000);
+		  ```
 		- The database automatically routes rows to the correct partition:
-
-			```
-			(1, 2024-06-10) -> orders_2024
-			(2, 2025-02-10) -> orders_2025
-			```
-
+		  
+		  ```
+		  (1, 2024-06-10) -> orders_2024
+		  (2, 2025-02-10) -> orders_2025
+		  ```
 		- Query the parent table:
-
-			```sql
-			SELECT *
-			FROM orders
-			WHERE order_date >= '2024-01-01'
-			  AND order_date < '2025-01-01';
-			```
-
+		  
+		  ```sql
+		  SELECT *
+		  FROM orders
+		  WHERE order_date >= '2024-01-01'
+		   AND order_date < '2025-01-01';
+		  ```
 		- The optimizer reads only orders_2024.
-
-		---
+		  
+		  ---
 	- ## Other Partition Types
 		- ### Range Partitioning
 			- `PARTITION BY RANGE (order_date)`
 			- Best for time-based or ordered data.
 			- Example:
-
-				```
-				2020-2022 -> Partition A
-				2023-2025 -> Partition B
-				```
-
+			  
+			  ```
+			  2020-2022 -> Partition A
+			  2023-2025 -> Partition B
+			  ```
 		- ### List Partitioning
 			- `PARTITION BY LIST (country)`
 			- Best when rows belong to a known set of categories.
 			- Example:
-
-				```
-				India -> Partition India
-				USA -> Partition USA
-				UK -> Partition UK
-				```
-
+			  
+			  ```
+			  India -> Partition India
+			  USA -> Partition USA
+			  UK -> Partition UK
+			  ```
 		- ### Hash Partitioning
 			- `PARTITION BY HASH (customer_id)`
 			- The database distributes rows using a hash function.
 			- Example:
-
-				```
-				hash(customer_id) % 4
-				```
-
+			  
+			  ```
+			  hash(customer_id) % 4
+			  ```
 			- Useful when data is not naturally divided by date or category.
-
-		---
+			  
+			  ---
 	- ## Partitioning Vs Sharding
 		- This is a very common interview question.
-		- 
-			| Aspect | Partitioning | Sharding |
-			|---|---|---|
-			| Data placement | Inside one database | Across multiple databases |
-			| Main goal | Performance and manageability | Write scaling and storage scaling |
-			| Server count | One database server | Multiple database servers |
-			| Operational impact | Lower complexity | Higher complexity |
-			| Typical use case | Large tables in one system | Very large distributed systems |
+		- | Aspect | Partitioning | Sharding |
+		  |---|---|---|
+		  | Data placement | Inside one database | Across multiple databases |
+		  | Main goal | Performance and manageability | Write scaling and storage scaling |
+		  | Server count | One database server | Multiple database servers |
+		  | Operational impact | Lower complexity | Higher complexity |
+		  | Typical use case | Large tables in one system | Very large distributed systems |
 		- Technically, sharding is a specialized form of partitioning where partitions are distributed across multiple servers.
-
-		---
+		  
+		  ---
 	- ## Real World Examples
 		- ### E-Commerce Orders
 			- Partition by created_at, usually by year.
 			- Example:
-
-				```
-				Orders_2023
-				Orders_2024
-				Orders_2025
-				```
-
+			  
+			  ```
+			  Orders_2023
+			  Orders_2024
+			  Orders_2025
+			  ```
 			- Example query:
-
-				```sql
-				SELECT *
-				FROM orders
-				WHERE created_at >= '2025-01-01'
-				  AND created_at < '2026-01-01';
-				```
-
+			  
+			  ```sql
+			  SELECT *
+			  FROM orders
+			  WHERE created_at >= '2025-01-01'
+			   AND created_at < '2026-01-01';
+			  ```
 			- This query lets the database scan only the 2025 partition.
-
 		- ### Logs
 			- Partition by date.
 			- Most log systems use time-based partitions.
@@ -1687,8 +1662,8 @@ collapsed:: true
 			- Partition by event date to improve reporting performance.
 		- ### Banking Transactions
 			- Partition by transaction date for efficient historical queries.
-
-		---
+			  
+			  ---
 	- ## Tradeoffs
 		- ### Advantages
 			- Faster queries
@@ -1701,8 +1676,8 @@ collapsed:: true
 			- Poor partition key can hurt performance
 			- Cross-partition queries may become expensive
 			- Repartitioning can be difficult
-
-		---
+			  
+			  ---
 	- ## Interview Cheat Sheet
 		- ### Why Partitioning?
 			- Large tables become difficult to manage
@@ -1716,8 +1691,8 @@ collapsed:: true
 			- List: partition using predefined values
 		- ### What Is Partition Pruning?
 			- Database scans only relevant partitions instead of the entire dataset.
-
-		---
+			  
+			  ---
 	- ## Key Takeaways
 		- Partitioning splits a large table into smaller logical pieces.
 		- It primarily improves performance and manageability.
@@ -1727,9 +1702,9 @@ collapsed:: true
 		- Sharding is a distributed form of partitioning.
 		- Partitioning solves performance problems, while sharding solves scalability problems.
 		- Partitioning and sharding are often used together in large-scale systems.
- - 1. Replication (VERY IMPORTANT)
-	 2. Read Replicas
-	 3. Primary-Replica Architecture
-	 4. Sharding
-	 5. Partitioning
-	 6. Indexing
+	- 1. Replication (VERY IMPORTANT)
+	  2. Read Replicas
+	  3. Primary-Replica Architecture
+	  4. Sharding
+	  5. Partitioning
+	  6. Indexing
