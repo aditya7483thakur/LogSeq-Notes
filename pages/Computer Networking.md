@@ -7,10 +7,10 @@
 		- Devices in a network can include **computers, servers, routers, switches, printers, etc.**
 	- ### 2. Types of Networks
 		- | Type | Full Form | Scope / Coverage | Example |
-		- | --- | --- | --- | --- |
-		- | **LAN** | Local Area Network | Small area, like a building or campus | Office Wi-Fi, Home network |
-		- | **MAN** | Metropolitan Area Network | City-wide network | University campus network across a city |
-		- | **WAN** | Wide Area Network | Large area, often country/worldwide | Internet, corporate networks connecting multiple cities |
+		  | --- | --- | --- | --- |
+		  | **LAN** | Local Area Network | Small area, like a building or campus | Office Wi-Fi, Home network |
+		  | **MAN** | Metropolitan Area Network | City-wide network | University campus network across a city |
+		  | **WAN** | Wide Area Network | Large area, often country/worldwide | Internet, corporate networks connecting multiple cities |
 	- ### 3. Key Differences
 		- **LAN:** High speed, low cost, limited area
 		- **MAN:** Medium speed, connects multiple LANs in a city
@@ -19,22 +19,22 @@
 		- LAN = your **apartment building**
 		- MAN = **city roads connecting buildings**
 		- WAN = **highways connecting cities across the country/world**
-- collapsed:: true
 - ### Clients and servers
+  collapsed:: true
 	- ### 1. What is a Client?
 		- A **client** is a **device or program** that **requests services or resources** from another device (the server).
 		- It initiates communication.
 			- **Examples:**
-		- Your **laptop or phone** using a web browser to visit a website
-		- Email client requesting emails from a mail server
-		- Mobile app requesting data from a cloud service
+				- Your **laptop or phone** using a web browser to visit a website
+				- Email client requesting emails from a mail server
+				- Mobile app requesting data from a cloud service
 	- ### 2. What is a Server?
 		- A **server** is a **device or program** that **provides services or resources** to clients.
 		- It **waits for requests** and responds.
 			- **Examples:**
-		- Web server hosting a website
-		- Database server storing user data
-		- File server in an office providing shared documents
+				- Web server hosting a website
+				- Database server storing user data
+				- File server in an office providing shared documents
 	- ### 3. Client-Server Model
 		- **Clients** request → **Servers** respond
 		- Enables **centralized resource management**
@@ -43,57 +43,57 @@
 			- 1. You open a browser (client) → request a webpage
 			- 2. Web server receives the request → sends the page back
 			- 3. Your browser displays the page
-			- ### 4. Key Points
-		- **Clients:** Initiators, can be many
-		- **Servers:** Responders, usually fewer, may handle multiple clients simultaneously
-		- Common model in **web, email, database, cloud services**
-- collapsed:: true
+			- 4. Key Points
+				- **Clients:** Initiators, can be many
+				- **Servers:** Responders, usually fewer, may handle multiple clients simultaneously
+				- Common model in **web, email, database, cloud services**
 - ### Peer-to-peer vs client-server
+  collapsed:: true
 	- **1. Client-Server Model**
-	- **Explanation:**
-	- This is the **traditional model** of networking.
-	- There is a **central server** that provides resources or services.
-	- Clients (like your computer, phone, or browser) **request services from the server**.
-	- **Key Points:**
-	- **Server:** Centralized, stores data, serves multiple clients.
-	- **Client:** Requests data/services, usually doesn’t share its own data.
-	- **Examples:**
-	- Websites (browser = client, web server = server)
-	- Email (Outlook/Gmail = client, mail server = server)
-	- Online banking apps
+		- **Explanation:**
+			- This is the **traditional model** of networking.
+			- There is a **central server** that provides resources or services.
+			- Clients (like your computer, phone, or browser) **request services from the server**.
+			- **Key Points:**
+				- **Server:** Centralized, stores data, serves multiple clients.
+				- **Client:** Requests data/services, usually doesn’t share its own data.
+			- **Examples:**
+				- Websites (browser = client, web server = server)
+				- Email (Outlook/Gmail = client, mail server = server)
+				- Online banking apps
 		- **Pros:**
-	- Centralized control → easy to manage, secure.
-	- Data backup is easier.
-	- **Cons:**
-	- Single point of failure → if server goes down, clients cannot access services.
-	- Can become a bottleneck under heavy load.
+			- Centralized control → easy to manage, secure.
+			- Data backup is easier.
+		- **Cons:**
+			- Single point of failure → if server goes down, clients cannot access services.
+			- Can become a bottleneck under heavy load.
 	- **2. Peer-to-Peer (P2P) Model**
-	- **Explanation:**
-	- There is **no central server**.
-	- Every device (peer) can **act as both client and server**.
-	- Devices **share resources directly** with each other.
-	- **Key Points:**
-	- All nodes are equal (peers).
-	- Resources (files, processing power) are distributed.
-	- Examples:
-	- Torrent networks
-	- Some blockchain systems
-	- Local file sharing apps (like older versions of Skype, BitTorrent)
+		- **Explanation:**
+			- There is **no central server**.
+			- Every device (peer) can **act as both client and server**.
+			- Devices **share resources directly** with each other.
+			- **Key Points:**
+				- All nodes are equal (peers).
+				- Resources (files, processing power) are distributed.
+			- Examples:
+				- Torrent networks
+				- Some blockchain systems
+				- Local file sharing apps (like older versions of Skype, BitTorrent)
 		- **Pros:**
-	- No single point of failure → more resilient.
-	- Efficient for sharing large amounts of data.
-	- **Cons:**
-	- Harder to manage and secure.
-	- Data availability depends on peers being online.
+		  id:: 6a5c8393-87a5-4889-a9a1-bb5006ca844a
+			- No single point of failure → more resilient.
+			- Efficient for sharing large amounts of data.
+		- **Cons:**
+			- Harder to manage and secure.
+			- Data availability depends on peers being online.
 	- ### Comparison Table
 	- | Feature | Client-Server | Peer-to-Peer (P2P) |
-	- | --- | --- | --- |
-	- | Central Server | Yes | No |
-	- | Control | Centralized | Distributed |
-	- | Failure Point | Single point of failure | No single failure point |
-	- | Resource Sharing | Server provides, client consumes | Each peer shares & consumes |
-	- | Examples | Websites, email, apps | Torrents, blockchain |
--
+	  | --- | --- | --- |
+	  | Central Server | Yes | No |
+	  | Control | Centralized | Distributed |
+	  | Failure Point | Single point of failure | No single failure point |
+	  | Resource Sharing | Server provides, client consumes | Each peer shares & consumes |
+	  | Examples | Websites, email, apps | Torrents, blockchain |
 - ### OSI Model Notes
   collapsed:: true
 	- ### Definition
@@ -101,14 +101,14 @@
 		- Divides network communication into **7 layers**, each with specific responsibilities.
 	- ### 7 Layers of OSI (Top → Bottom)
 		- | Layer | What it handles | What can be “exposed” / inspected |
-		- | --- | --- | --- |
-		- | 7. Application | User apps, data meaning | URLs, HTTP content, emails, chat messages |
-		- | 6. Presentation | Data formatting, encryption | Encryption type, compressed data |
-		- | 5. Session | Connection/session management | Session IDs, authentication tokens |
-		- | 4. Transport | TCP/UDP ports, sequence numbers | Ports (22 for SSH, 80 for HTTP), protocols, connection state |
-		- | 3. Network | IP addressing, routing | Source/destination IPs, routing info |
-		- | 2. Data Link | Frames, MAC addresses | MAC addresses, VLAN tags |
-		- | 1. Physical | Bits over medium | Signals, cables, wireless waves |
+		  | --- | --- | --- |
+		  | 7. Application | User apps, data meaning | URLs, HTTP content, emails, chat messages |
+		  | 6. Presentation | Data formatting, encryption | Encryption type, compressed data |
+		  | 5. Session | Connection/session management | Session IDs, authentication tokens |
+		  | 4. Transport | TCP/UDP ports, sequence numbers | Ports (22 for SSH, 80 for HTTP), protocols, connection state |
+		  | 3. Network | IP addressing, routing | Source/destination IPs, routing info |
+		  | 2. Data Link | Frames, MAC addresses | MAC addresses, VLAN tags |
+		  | 1. Physical | Bits over medium | Signals, cables, wireless waves |
 	- ### Transport Layer Detail
 		- **TCP (connection-oriented)** uses a **3-way handshake**: SYN → SYN-ACK → ACK
 		- Ensures **reliable, ordered delivery** of packets before actual data transfer.
@@ -130,7 +130,31 @@
 		- 6. **Data Link:** Frame packets, add MAC addresses, error detection
 		- 7. **Physical:** Transmit bits over Wi-Fi, fiber, or copper
 		- **Receiver reverses steps** to reconstruct the original message.
--
+- ### HTTP Versions
+  collapsed:: true
+	- ### At a glance
+	  
+	  | Version | Core idea | Transport |
+	  | --- | --- | --- |
+	  | **HTTP/1.0** | One request, one connection | TCP |
+	  | **HTTP/1.1** | Reuses connections with keep-alive | TCP |
+	  | **HTTP/2** | Multiplexes many streams on one connection | TCP |
+	  | **HTTP/3** | Uses QUIC for faster and more resilient delivery | QUIC over UDP |
+	- ### Feature comparison
+	   
+	   | Feature | HTTP/1.0 | HTTP/1.1 | HTTP/2 | HTTP/3 |
+	   | --- | --- | --- | --- | --- |
+	   | Release year | 1996 | 1997 | 2015 | 2022 |
+	   | Persistent connections | No | Yes | Yes | Yes |
+	   | Multiple requests per connection | No | Sequential | Concurrent | Concurrent |
+	   | Binary protocol | No | No | Yes | Yes |
+	   | Header compression | No | No | HPACK | QPACK |
+	   | Server push | No | No | Yes, rarely used | Supported, rarely used |
+	   | Head-of-line blocking | HTTP-level | HTTP-level | Only at TCP level | No TCP-level HOL blocking |
+	   | TLS built in | No | No | No | Yes |
+	   | Connection migration | No | No | No | Yes |
+	   | Typical browser setup | Many connections | ~6 per origin | Usually 1 | Usually 1 |
+	   | Performance | Slow | Better | Much better | Best on lossy/mobile networks |
 - ### TCP/IP 4-Layer Model
   collapsed:: true
 	- **Definition:**
@@ -138,123 +162,119 @@
 	- OSI is **conceptual/theoretical**, TCP/IP is **practical**.
 	- ### TCP/IP Layers (Real-World Focus)
 	- | TCP/IP Layer | OSI Equivalent | Key Function | Examples / Notes |
-	- | --- | --- | --- | --- |
-	- | **Application** | OSI 5–7 (Application, Presentation, Session) | Provides network services directly to apps | HTTP, HTTPS, FTP, SMTP, DNS; what apps “see” |
-	- | **Transport** | OSI 4 (Transport) | Ensures end-to-end communication, error handling | TCP (reliable), UDP (fast, connectionless), ports |
-	- | **Internet** | OSI 3 (Network) | Logical addressing and routing | IP (IPv4/IPv6), ICMP, routers, subnets |
-	- | **Network Access / Link** | OSI 1–2 (Physical + Data Link) | Node-to-node delivery, MAC addressing, physical transmission | Ethernet, Wi-Fi, ARP, cables, switches |
+	  | --- | --- | --- | --- |
+	  | **Application** | OSI 5–7 (Application, Presentation, Session) | Provides network services directly to apps | HTTP, HTTPS, FTP, SMTP, DNS; what apps “see” |
+	  | **Transport** | OSI 4 (Transport) | Ensures end-to-end communication, error handling | TCP (reliable), UDP (fast, connectionless), ports |
+	  | **Internet** | OSI 3 (Network) | Logical addressing and routing | IP (IPv4/IPv6), ICMP, routers, subnets |
+	  | **Network Access / Link** | OSI 1–2 (Physical + Data Link) | Node-to-node delivery, MAC addressing, physical transmission | Ethernet, Wi-Fi, ARP, cables, switches |
 	- ### Data Flow Example (Real-World)
 	- 1. Browser sends **HTTP request** → Application layer
 	- 2. TCP splits data into packets → Transport layer
 	- 3. Adds source/destination IP → Internet layer
 	- 4. Converts packets to frames, sends bits over cable/Wi-Fi → Network Access layer
--
 - ### RPC
   collapsed:: true
 	- > “RPC stands for Remote Procedure Call. It allows a program to call a function on another computer as if it were local, abstracting away all the network details.”
-	- >
 	- ### Optional Follow-up
-	- If the interviewer probes further, you can add:
-	- Client sends a request, server executes the function, result is returned.
-	- Looks like a **normal function call**, but it happens over the network.
-	- Used in **distributed systems and client-server architectures**.
-- collapsed:: true
+		- If the interviewer probes further, you can add:
+		- Client sends a request, server executes the function, result is returned.
+		- Looks like a **normal function call**, but it happens over the network.
+		- Used in **distributed systems and client-server architectures**.
 - ### MAC Address (Media Access Control Address)
   collapsed:: true
 	- ### 🧠 **1. MAC Address – The “Physical” Identity of a Device**
 		- **MAC (Media Access Control) address** = unique **hardware identifier** burned into a device’s **Network Interface Card (NIC)**.
 		- 📦 **Example:**
-	- ```
-	  A4:5E:60:8B:CC:12
-	  ```
+		- ```
+		  A4:5E:60:8B:CC:12
+		  ```
 		- It’s 48 bits (6 bytes), usually written in hexadecimal (base 16).
-	- ### 🧩 **Structure of a MAC Address**
-		- The **first 3 bytes** → manufacturer ID (OUI - Organizationally Unique Identifier)
-		- The **last 3 bytes** → unique serial number for the device
+		- ### 🧩 **Structure of a MAC Address**
+			- The **first 3 bytes** → manufacturer ID (OUI - Organizationally Unique Identifier)
+			- The **last 3 bytes** → unique serial number for the device
 			- So, every network device (computer, phone, router, printer) has a **unique MAC address**.
-	- ### ⚙️ **Where it operates:**
-		- Works at **Layer 2 (Data Link Layer)** of the OSI model.
-		- Used **only within the local network (LAN)** — it does *not* travel over the internet.
-		- When a device sends data to another device in the same LAN, it must know the **MAC address** of the destination device.
+		- ### ⚙️ **Where it operates:**
+			- Works at **Layer 2 (Data Link Layer)** of the OSI model.
+			- Used **only within the local network (LAN)** — it does *not* travel over the internet.
+			- When a device sends data to another device in the same LAN, it must know the **MAC address** of the destination device.
 	- ### 🔍 **2. How Devices Identify Each Other on a LAN**
 		- Imagine your laptop (Device A) wants to send a packet to another computer (Device B) **in the same Wi-Fi or Ethernet network**.
-	- ### Here’s what happens:
-		- 1. Each device in the LAN has:
-		- An **IP address** (logical address, Layer 3)
-		- A **MAC address** (hardware address, Layer 2)
-		- 2. When your system sends data to another IP in the same network, it **needs to know the target’s MAC address** to actually deliver the frame on the wire.
-		- 3. This is where **ARP (Address Resolution Protocol)** comes in.
-		- ### 🛰️ **3. ARP (Address Resolution Protocol)**
+		- ### Here’s what happens:
+			- 1. Each device in the LAN has:
+			- An **IP address** (logical address, Layer 3)
+			- A **MAC address** (hardware address, Layer 2)
+			- 2. When your system sends data to another IP in the same network, it **needs to know the target’s MAC address** to actually deliver the frame on the wire.
+			- 3. This is where **ARP (Address Resolution Protocol)** comes in.
+	- ### 🛰️ **3. ARP (Address Resolution Protocol)**
 		- ARP is the bridge between **IP addresses** and **MAC addresses**.
 		- ### ⚡ The job of ARP:
-		- Translate IP → MAC (so data can be delivered inside a LAN).
-	- ### 📨 **ARP Process Example**
-		- Let’s say:
-		- Device A: IP → 192.168.1.10, MAC → A4:5E:60:8B:CC:12
-		- Device B: IP → 192.168.1.11, MAC → 9C:35:EB:4F:7A:02
-		- Now, Device A wants to send data to 192.168.1.11.
-	- ### Step 1 → ARP Request (Broadcast)
-		- Device A doesn’t know B’s MAC yet.
-		- So, it sends a broadcast message to everyone in the LAN:
-		- > “Who has IP 192.168.1.11? Please tell 192.168.1.10.”
-		- >
-		- 🟡 This ARP request is sent to a **special broadcast MAC address**:
-		- `FF:FF:FF:FF:FF:FF` (means *everyone on the LAN hears it*).
-	- ### Step 2 → ARP Reply (Unicast)
-		- Device B sees the message and replies directly to Device A:
-		- > “I’m 192.168.1.11, and my MAC is 9C:35:EB:4F:7A:02.”
-		- >
-		- Now A knows how to reach B physically.
-	- ### Step 3 → ARP Cache
-		- Device A stores this mapping in its **ARP table**:
-	- ```
-	  192.168.1.11 → 9C:35:EB:4F:7A:02
-	  ```
-		- So next time, A doesn’t need to broadcast again—it already knows the MAC.
--
+			- Translate IP → MAC (so data can be delivered inside a LAN).
+		- ### 📨 **ARP Process Example**
+			- Let’s say:
+			- Device A: IP → 192.168.1.10, MAC → A4:5E:60:8B:CC:12
+			- Device B: IP → 192.168.1.11, MAC → 9C:35:EB:4F:7A:02
+			- Now, Device A wants to send data to 192.168.1.11.
+		- ### Step 1 → ARP Request (Broadcast)
+			- Device A doesn’t know B’s MAC yet.
+			- So, it sends a broadcast message to everyone in the LAN:
+			- > “Who has IP 192.168.1.11? Please tell 192.168.1.10.”
+			- 🟡 This ARP request is sent to a **special broadcast MAC address**:
+			- `FF:FF:FF:FF:FF:FF` (means *everyone on the LAN hears it*).
+		- ### Step 2 → ARP Reply (Unicast)
+			- Device B sees the message and replies directly to Device A:
+			- “I’m 192.168.1.11, and my MAC is 9C:35:EB:4F:7A:02.”
+			- Now A knows how to reach B physically.
+		- ### Step 3 → ARP Cache
+			- Device A stores this mapping in its **ARP table**:
+			- ```
+			  192.168.1.11 → 9C:35:EB:4F:7A:02
+			  ```
+			- So next time, A doesn’t need to broadcast again—it already knows the MAC.
 - ### Internet Protocol (IP) & Related Tools
-  collapsed:: true
 	- ### 🧠 1. What is an IP?
+	  collapsed:: true
 		- **IP (Internet Protocol)** is the **unique address and set of rules** that allow devices to identify and communicate with each other over a network.
 		- 📍 Think of it like a **house address system** — every device needs one so that data (like letters) knows where to go.
-	- ### 📦 Types of IP Addresses
-		- | Type | Description | Example |
-		- | --- | --- | --- |
-		- | **IPv4** | 32-bit address written as 4 numbers (0–255) | `192.168.1.1` |
-		- | **IPv6** | 128-bit, newer format using hexadecimal | `2405:204:3a9a::1` |
-		- IPv4 allows about **4.3 billion** addresses — nearly exhausted.
-		- IPv6 was introduced to support **~3.4 × 10³⁸** unique addresses.
-	- ### 🌐 Private vs Public IP
-		- | Type | Used For | Example Range | Visible on Internet? |
-		- | --- | --- | --- | --- |
-		- | **Private IP** | Inside local network (home/office) | `192.168.x.x`, `10.x.x.x`, `172.16–31.x.x` | ❌ No |
-		- | **Public IP** | Assigned by ISP, visible online | `49.205.71.24` | ✅ Yes |
-		- 👉 Example:
-		- Your **laptop (192.168.1.5)** → **Router (49.205.71.24)** → **Internet**
-	- ### ⚙️ How IP Works (Step-by-Step)
-		- 1. Every device gets an **IP address**.
-		- 2. Data is split into **packets**.
-		- 3. Each packet carries:
-		- **Source IP** (sender)
-		- **Destination IP** (receiver)
-		- 4. **Routers** read the destination IP and forward packets to the right path.
-		- 🧭 IP is a **Network Layer (Layer 3)** protocol in the OSI model.
+		- ### 📦 Types of IP Addresses
+			- | Type | Description | Example |
+			  | --- | --- | --- |
+			  | **IPv4** | 32-bit address written as 4 numbers (0–255) | `192.168.1.1` |
+			  | **IPv6** | 128-bit, newer format using hexadecimal | `2405:204:3a9a::1` |
+			- IPv4 allows about **4.3 billion** addresses — nearly exhausted.
+			- IPv6 was introduced to support **~3.4 × 10³⁸** unique addresses.
+		- ### 🌐 Private vs Public IP
+			- | Type | Used For | Example Range | Visible on Internet? |
+			  | --- | --- | --- | --- |
+			  | **Private IP** | Inside local network (home/office) | `192.168.x.x`, `10.x.x.x`, `172.16–31.x.x` | ❌ No |
+			  | **Public IP** | Assigned by ISP, visible online | `49.205.71.24` | ✅ Yes |
+			- 👉 Example:
+			- Your **laptop (192.168.1.5)** → **Router (49.205.71.24)** → **Internet**
+		- ### ⚙️ How IP Works (Step-by-Step)
+			- 1. Every device gets an **IP address**.
+			- 2. Data is split into **packets**.
+			- 3. Each packet carries:
+				- **Source IP** (sender)
+				- **Destination IP** (receiver)
+			- 4. **Routers** read the destination IP and forward packets to the right path.
+			- 🧭 IP is a **Network Layer (Layer 3)** protocol in the OSI model.
 		- ### 🧩 Key Concepts
-		- ### a) Subnet
-		- A **subset of IPs** within a network.
-		- Example: `192.168.1.0/24` → `192.168.1.1–192.168.1.254`
-	- ### b) Gateway
-		- The **router’s internal IP**, e.g. `192.168.1.1`, which connects your LAN to the internet.
-	- ### c) DNS
-		- Converts **domain names → IP addresses**, e.g. `google.com → 142.250.182.206`.
-	- ### d) NAT (Network Address Translation)
-		- Allows many **private IPs** to share **one public IP** — handled by your router.
-	- ### 🧭 Backend / DevOps Context
-		- Your deployed **backend server** has a **public IP**.
-		- Your **database** often has a **private IP** within a **VPC (Virtual Private Cloud)**.
-		- Both communicate over IP (using ports like 80 for HTTP, 443 for HTTPS).
-			- **Think of it like:**
-			- 🧠 The **postal address system of the internet** — it defines *where* to send data and ensures it reaches the correct destination.
+			- ### a) Subnet
+				- A **subset of IPs** within a network.
+				- Example: `192.168.1.0/24` → `192.168.1.1–192.168.1.254`
+			- ### b) Gateway
+				- A **gateway** is the device (or software) that forwards traffic from your local network to other networks.
+				- On your computer, the **default gateway** is configured as an IP address (e.g., `192.168.1.1`), which is usually the LAN IP address of your home router.
+				- Whenever your computer needs to send a packet outside its local subnet, it sends it to the default gateway first.
+			- ### c) DNS
+				- Converts **domain names → IP addresses**, e.g. `google.com → 142.250.182.206`.
+			- ### d) NAT (Network Address Translation)
+				- Allows many **private IPs** to share **one public IP** — handled by your router.
+		- ### 🧭 Backend / DevOps Context
+			- Your deployed **backend server** has a **public IP**.
+			- Your **database** often has a **private IP** within a **VPC (Virtual Private Cloud)**.
+			- Both communicate over IP (using ports like 80 for HTTP, 443 for HTTPS).
+				- **Think of it like:**
+				- 🧠 The **postal address system of the internet** — it defines *where* to send data and ensures it reaches the correct destination.
 	- ### 📦 2. IP Packet
 		- An **IP Packet** is the **basic unit of data** transmitted using the Internet Protocol.
 		- It consists of two parts:
@@ -262,14 +282,14 @@
 		- 2. **Payload** → the actual data (like part of a web page, file, or email).
 		- ### 📑 Key Fields in the IPv4 Header
 		- | Field | Description |
-		- | --- | --- |
-		- | **Version** | IPv4 or IPv6 |
-		- | **Header Length** | Size of the header |
-		- | **Total Length** | Header + Payload |
-		- | **TTL (Time To Live)** | Number of hops allowed before discarding |
-		- | **Protocol** | Next layer (TCP = 6, UDP = 17, ICMP = 1) |
-		- | **Source IP** | Sender’s address |
-		- | **Destination IP** | Receiver’s address |
+		  | --- | --- |
+		  | **Version** | IPv4 or IPv6 |
+		  | **Header Length** | Size of the header |
+		  | **Total Length** | Header + Payload |
+		  | **TTL (Time To Live)** | Number of hops allowed before discarding |
+		  | **Protocol** | Next layer (TCP = 6, UDP = 17, ICMP = 1) |
+		  | **Source IP** | Sender’s address |
+		  | **Destination IP** | Receiver’s address |
 		- ### ⚙️ How It Works
 		- Data is divided into packets.
 		- Each packet is wrapped with an IP header → **forms an IP Packet**.
@@ -282,11 +302,11 @@
 		- It doesn’t carry user data like HTTP or TCP — instead, it carries **control information**.
 	- ### 📚 Common ICMP Message Types
 		- | Type | Meaning |
-		- | --- | --- |
-		- | **Echo Request / Echo Reply** | Used by `ping` |
-		- | **Destination Unreachable** | Router can’t reach target |
-		- | **Time Exceeded** | Used by `traceroute` when TTL hits 0 |
-		- | **Redirect** | Suggests a better route |
+		  | --- | --- |
+		  | **Echo Request / Echo Reply** | Used by `ping` |
+		  | **Destination Unreachable** | Router can’t reach target |
+		  | **Time Exceeded** | Used by `traceroute` when TTL hits 0 |
+		  | **Redirect** | Suggests a better route |
 	- ### 🧭 Role in Networking
 		- Routers and hosts use ICMP to:
 		- Report unreachable networks
@@ -309,10 +329,10 @@
 	  Reply from 10.50.53.164: bytes=32 time=84ms TTL=64
 	  ```
 		- | Field | Meaning |
-		- | --- | --- |
-		- | `bytes=32` | Packet size |
-		- | `time=84ms` | Round-trip time |
-		- | `TTL=64` | Packet passed 64 hops |
+		  | --- | --- |
+		  | `bytes=32` | Packet size |
+		  | `time=84ms` | Round-trip time |
+		  | `TTL=64` | Packet passed 64 hops |
 		- 📊 Lower time → faster connection.
 		- ❌ No reply → host unreachable.
 		- **Think of it like:**
@@ -333,9 +353,9 @@
 	  ```
 		- ### 💡 Difference Between Ping and Traceroute
 		- | Tool | Purpose | Protocol Used |
-		- | --- | --- | --- |
-		- | **Ping** | Checks if destination is reachable | ICMP Echo |
-		- | **Traceroute** | Maps the path packets take | ICMP Time Exceeded |
+		  | --- | --- | --- |
+		  | **Ping** | Checks if destination is reachable | ICMP Echo |
+		  | **Traceroute** | Maps the path packets take | ICMP Time Exceeded |
 		- **Think of it like:**
 		- 🗺️ Following your **letter’s journey** through each post office until it reaches its destination.
 		- ### 🧩 Quick Summary Diagram
@@ -364,12 +384,12 @@
 		- >
 		- That ICMP message is wrapped inside an **IP packet**, which contains:
 		- | Field | Description |
-		- | --- | --- |
-		- | **Source IP** | 192.168.1.2 (your IP) |
-		- | **Destination IP** | 142.250.190.78 (Google) |
-		- | **Protocol** | ICMP |
-		- | **TTL (Time To Live)** | usually starts at 64 or 128 |
-		- | **Payload** | “Ping data” |
+		  | --- | --- |
+		  | **Source IP** | 192.168.1.2 (your IP) |
+		  | **Destination IP** | 142.250.190.78 (Google) |
+		  | **Protocol** | ICMP |
+		  | **TTL (Time To Live)** | usually starts at 64 or 128 |
+		  | **Payload** | “Ping data” |
 		- ### 3. The packet travels across routers
 		- Each **router** along the path does this:
 		- Reads the **destination IP**.
@@ -391,14 +411,14 @@
 		- ### 5. What traceroute does differently
 		- Traceroute sends multiple packets with **increasing TTL values**:
 		- | TTL | What happens |
-		- | --- | --- |
-		- | 1 | Router #1 sends ICMP “time exceeded” → hop 1 found |
-		- | 2 | Router #2 sends ICMP “time exceeded” → hop 2 found |
-		- | ... | continues until destination reached |
-		- | final | Destination sends “ICMP Echo Reply” → route complete |
+		  | --- | --- |
+		  | 1 | Router #1 sends ICMP “time exceeded” → hop 1 found |
+		  | 2 | Router #2 sends ICMP “time exceeded” → hop 2 found |
+		  | ... | continues until destination reached |
+		  | final | Destination sends “ICMP Echo Reply” → route complete |
 		- That’s how you get a full **path of routers from you to the destination.**
--
 - ### Address Resolution Protocol
+  collapsed:: true
 	- ### 🧭 ARP (Address Resolution Protocol)
 	- > Think of it like: asking around the neighborhood,
 	- >
@@ -475,9 +495,9 @@
 	- ✅ Packet travels at Layer 3 using IP.
 	- ### 🧠 4. Why We Need MAC (and Why IP Alone Isn’t Enough)
 	- | Concept | Works At | Used For | Known To |
-	- | --- | --- | --- | --- |
-	- | **IP Address** | Layer 3 (Network) | Logical addressing between networks | Routers |
-	- | **MAC Address** | Layer 2 (Data Link) | Physical delivery within local network | Switches & NICs |
+	  | --- | --- | --- | --- |
+	  | **IP Address** | Layer 3 (Network) | Logical addressing between networks | Routers |
+	  | **MAC Address** | Layer 2 (Data Link) | Physical delivery within local network | Switches & NICs |
 	- ### 💬 Explanation:
 	- **IP** tells *which device logically* should receive the packet (like an address on a map).
 	- But **inside your LAN**, devices don’t route by IP — your **switch** forwards frames using **MAC addresses** only.
@@ -509,13 +529,12 @@
 	- That’s why modern switches and OSes use **ARP inspection** and **cache validation**.
 	- ### 🧩 7. Summary Table
 	- | Term | Meaning | Think of it like |
-	- | --- | --- | --- |
-	- | **ARP** | Finds MAC for a given IP | Asking “Who lives at this address?” |
-	- | **MAC Address** | Hardware ID used in local network | Person’s name |
-	- | **IP Address** | Logical address for devices on Internet | House address |
-	- | **Reason we need MAC** | Ethernet/Wi-Fi can only send using MAC, not IP | The local delivery needs the exact door |
-	- | **Reason we need ARP** | To translate IP → MAC before sending the frame | Finding the right door before handing the letter |
--
+	  | --- | --- | --- |
+	  | **ARP** | Finds MAC for a given IP | Asking “Who lives at this address?” |
+	  | **MAC Address** | Hardware ID used in local network | Person’s name |
+	  | **IP Address** | Logical address for devices on Internet | House address |
+	  | **Reason we need MAC** | Ethernet/Wi-Fi can only send using MAC, not IP | The local delivery needs the exact door |
+	  | **Reason we need ARP** | To translate IP → MAC before sending the frame | Finding the right door before handing the letter |
 - ### UDP (User Datagram Protocol)
   collapsed:: true
 	- ### 🌍 **Layer Information**
@@ -529,15 +548,15 @@
 	- >
 	- ### 🧩 **Key Characteristics**
 	- | **Feature** | **Description** |
-	- | --- | --- |
-	- | **Connectionless** | UDP doesn’t establish a connection before sending data — it just sends packets (datagrams) directly to the destination. |
-	- | **Unreliable** | No acknowledgment, retransmission, or guarantee that data will reach the receiver. |
-	- | **No Flow Control** | UDP doesn’t care if the receiver is slower; it keeps sending data even if the receiver’s buffer overflows — extra packets are simply dropped. |
-	- | **No Congestion Control** | UDP doesn’t monitor network congestion or slow down when the network is overloaded — it always sends at the same rate. |
-	- | **Message-Oriented** | Each packet (datagram) is independent — no concept of continuous data stream like TCP. |
-	- | **Lightweight Protocol** | Very small header (8 bytes) → minimal processing overhead, ideal for high-speed communication. |
-	- | **Supports Broadcast & Multicast** | Can send data to multiple receivers simultaneously — useful for streaming, discovery protocols, etc. |
-	- | **Stateless** | The sender and receiver don’t maintain any session or connection state, making it scalable for large systems. |
+	  | --- | --- |
+	  | **Connectionless** | UDP doesn’t establish a connection before sending data — it just sends packets (datagrams) directly to the destination. |
+	  | **Unreliable** | No acknowledgment, retransmission, or guarantee that data will reach the receiver. |
+	  | **No Flow Control** | UDP doesn’t care if the receiver is slower; it keeps sending data even if the receiver’s buffer overflows — extra packets are simply dropped. |
+	  | **No Congestion Control** | UDP doesn’t monitor network congestion or slow down when the network is overloaded — it always sends at the same rate. |
+	  | **Message-Oriented** | Each packet (datagram) is independent — no concept of continuous data stream like TCP. |
+	  | **Lightweight Protocol** | Very small header (8 bytes) → minimal processing overhead, ideal for high-speed communication. |
+	  | **Supports Broadcast & Multicast** | Can send data to multiple receivers simultaneously — useful for streaming, discovery protocols, etc. |
+	  | **Stateless** | The sender and receiver don’t maintain any session or connection state, making it scalable for large systems. |
 	- ### 🧱 **UDP Header Size**
 	- **Header size:** 8 bytes (very small compared to TCP).
 	- ### 🔁 **Working Concept (Simplified Explanation)**
@@ -574,15 +593,14 @@
 	- **Live broadcasting / real-time data feeds**
 	- ### 💻 **Common UDP-Based Protocols**
 	- | Application | Protocol | Port |
-	- | --- | --- | --- |
-	- | DNS (Domain Name System) | UDP | 53 |
-	- | DHCP (Dynamic Host Configuration Protocol) | UDP | 67/68 |
-	- | SNMP (Simple Network Management Protocol) | UDP | 161/162 |
-	- | TFTP (Trivial File Transfer Protocol) | UDP | 69 |
-	- | NTP (Network Time Protocol) | UDP | 123 |
-	- | RTP/RTCP (Real-time Transport Protocol) | UDP | varies |
-	- | QUIC (used by HTTP/3, Google) | UDP | varies |
--
+	  | --- | --- | --- |
+	  | DNS (Domain Name System) | UDP | 53 |
+	  | DHCP (Dynamic Host Configuration Protocol) | UDP | 67/68 |
+	  | SNMP (Simple Network Management Protocol) | UDP | 161/162 |
+	  | TFTP (Trivial File Transfer Protocol) | UDP | 69 |
+	  | NTP (Network Time Protocol) | UDP | 123 |
+	  | RTP/RTCP (Real-time Transport Protocol) | UDP | varies |
+	  | QUIC (used by HTTP/3, Google) | UDP | varies |
 - ### TCP (Transmission Control Protocol)
   collapsed:: true
 	- What is TCP?
@@ -596,12 +614,12 @@
 		- Stream-based communication
 		- ### Key properties
 		- | Property | Meaning |
-		- | --- | --- |
-		- | Reliable | Retransmits lost packets |
-		- | Ordered | Sequence numbers ensure correct order |
-		- | Connection-oriented | Requires handshake |
-		- | Stream-based | Sends continuous stream of bytes |
-		- | Congestion controlled | Adjusts speed based on network load |
+		  | --- | --- |
+		  | Reliable | Retransmits lost packets |
+		  | Ordered | Sequence numbers ensure correct order |
+		  | Connection-oriented | Requires handshake |
+		  | Stream-based | Sends continuous stream of bytes |
+		  | Congestion controlled | Adjusts speed based on network load |
 	- Ports, Sockets & the 5-Tuple
 		- ### 3.1 Ports
 		- Ports identify "which application" inside a machine should receive the packet.
@@ -975,12 +993,12 @@
 		- ✔ So TCP slows down heavily
 		- ### 📌 **Summary Table (Super Clean)**
 		- | Phase | Trigger | Growth | Meaning |
-		- | --- | --- | --- | --- |
-		- | **Slow Start** | Start or timeout | Exponential | Probe bandwidth quickly |
-		- | **Congestion Avoidance** | cwnd ≥ ssthresh | Linear | Stable growth |
-		- | **Fast Retransmit** | 3 duplicate ACKs | — | Quickly retransmit loss |
-		- | **Fast Recovery** | After fast retransmit | Linear | Mild congestion recovery |
-		- | **Timeout** | No ACK for RTO time | Reset to 1 MSS | Heavy congestion |
+		  | --- | --- | --- | --- |
+		  | **Slow Start** | Start or timeout | Exponential | Probe bandwidth quickly |
+		  | **Congestion Avoidance** | cwnd ≥ ssthresh | Linear | Stable growth |
+		  | **Fast Retransmit** | 3 duplicate ACKs | — | Quickly retransmit loss |
+		  | **Fast Recovery** | After fast retransmit | Linear | Mild congestion recovery |
+		  | **Timeout** | No ACK for RTO time | Reset to 1 MSS | Heavy congestion |
 		- ### 🎯 **One-Line Interview Answer**
 		- **“TCP congestion control uses a congestion window. It starts with Slow Start (exponential), then Congestion Avoidance (linear). Loss via 3 duplicate ACKs triggers Fast Retransmit and Fast Recovery (cut cwnd in half, linear growth). Loss via timeout resets cwnd to 1 MSS and restarts Slow Start.”**
 	- Retransmissions & Loss Recovery
@@ -1066,7 +1084,6 @@
 		- ### 🔥 Simple SDE-friendly explanation
 		- > Window Scaling removes the 65 KB limit by allowing TCP to advertise bigger receive windows, increasing throughput on high-latency or high-bandwidth networks.
 		- >
--
 - ### NAT (Network Address Translation)
   collapsed:: true
 	- NAT is a technique used by routers to map **private IP addresses** inside a LAN to **one public IP address** on the internet.
@@ -1169,7 +1186,6 @@
 		- **publicIP:port → privateIP:port**
 	- Max ~65k concurrent connections per public IP.
 	- Used for internet access, port forwarding, load balancing, and security
--
 - ### Extras
   collapsed:: true
 	- ### 🧩 **1. What is the Loopback Interface (127.0.0.1)?**
@@ -1352,11 +1368,11 @@
 	- ### 🟦 **1. The normal (raw) way: You specify ports**
 	- If you do **NOT** use Nginx or Caddy, and you have apps like:
 	- | App | Port |
-	- | --- | --- |
-	- | React app 1 | 3000 |
-	- | React app 2 | 3001 |
-	- | Node API | 5000 |
-	- | Admin panel | 4000 |
+	  | --- | --- |
+	  | React app 1 | 3000 |
+	  | React app 2 | 3001 |
+	  | Node API | 5000 |
+	  | Admin panel | 4000 |
 	- Then users must access them like:
 	- ```
 	  http://public-ip:3000
@@ -1478,7 +1494,6 @@
 	  Pod (container)
 	  - app runs on port 8080 or others
 	  ```
--
 - ### Domains knowledge
   collapsed:: true
 	- ### 🟦 **1. What is a Domain?**
@@ -1525,14 +1540,14 @@
 	- They are the **last part** of a domain.
 	- Examples:
 	- | TLD | Meaning |
-	- | --- | --- |
-	- | `.com` | Commercial (most common) |
-	- | `.dev` | For developers (Google-owned) |
-	- | `.org` | Organizations |
-	- | `.net` | Networks (ISPs originally) |
-	- | `.co` | Originally for Colombia, now used globally |
-	- | `.in` | India |
-	- | `.io` | British Indian Territory; popular in tech |
+	  | --- | --- |
+	  | `.com` | Commercial (most common) |
+	  | `.dev` | For developers (Google-owned) |
+	  | `.org` | Organizations |
+	  | `.net` | Networks (ISPs originally) |
+	  | `.co` | Originally for Colombia, now used globally |
+	  | `.in` | India |
+	  | `.io` | British Indian Territory; popular in tech |
 	- They help categorize domains.
 	- ### 🟥 **4. Are domains related to ports?**
 	- ### ❌ **NO. Domains have ZERO relation to ports.**
@@ -1614,7 +1629,6 @@
 	- ### ✔️ **`.com`, `.dev`, `.co` = top-level domain categories**
 	- ### ✔️ **None of these have any relation to port numbers**
 	- ### ✔️ **Ports are chosen by services & protocols, not domains**
-- collapsed:: true
 - ### TLS / SSL certificate
   collapsed:: true
 	- ### Establishment
@@ -1624,10 +1638,8 @@
 		- 4. server decrypts the random_secret using its private key now they both have the shared random_secret
 		- 5. In TLS(≤1.2) session key is derived by ( random_secret , client_random_number ,server_random_number )
 		- 6. This session key is then used to encrypt data and decrypt data
--
 - ### Protocols (pending and important → HTTP, HTTPS, FTP,SMTP, etc.)
   collapsed:: true
--
 - ### HTTP Status Codes
   collapsed:: true
 	- 1. 1xx (Informational):
@@ -1645,7 +1657,6 @@
 	- 5. 5xx (Server Errors):
 	- o Indicate an error on the server’s part.
 	- Example: 500 Internal Server Error.
--
 - ### SDE’s Networking Cheat Sheet
   collapsed:: true
 	- ### 🧠 Networking Cheat Sheet for SDEs (Updated)
@@ -1688,13 +1699,13 @@
 		- Devices on **different subnets** (even in the same larger network) → gateway needed
 	- ### 🔹 Quick Reference Table
 		- | Term | What it does | Example |
-		- | --- | --- | --- |
-		- | IP Address | Identifies device | 192.168.1.10 |
-		- | Network | Group of devices | 192.168.1.0/24 |
-		- | Host | Device inside network | 192.168.1.5 |
-		- | Network Address | Identifies subnet | 192.168.1.0 |
-		- | Broadcast Address | Message all hosts | 192.168.1.255 |
-		- | Subnet | Division of network | 192.168.1.0/24 |
-		- | Subnet Mask | Separates network/host | 255.255.255.0 |
-		- | /24 | CIDR shorthand for subnet mask | /24 = 255.255.255.0 |
-		- | Gateway | Connects to other networks | 192.168.1.1 |
+		  | --- | --- | --- |
+		  | IP Address | Identifies device | 192.168.1.10 |
+		  | Network | Group of devices | 192.168.1.0/24 |
+		  | Host | Device inside network | 192.168.1.5 |
+		  | Network Address | Identifies subnet | 192.168.1.0 |
+		  | Broadcast Address | Message all hosts | 192.168.1.255 |
+		  | Subnet | Division of network | 192.168.1.0/24 |
+		  | Subnet Mask | Separates network/host | 255.255.255.0 |
+		  | /24 | CIDR shorthand for subnet mask | /24 = 255.255.255.0 |
+		  | Gateway | Connects to other networks | 192.168.1.1 |
