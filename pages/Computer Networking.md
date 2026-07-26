@@ -421,13 +421,9 @@
 - ### Address Resolution Protocol
   collapsed:: true
 	- ### 🧭 ARP (Address Resolution Protocol)
-	- > Think of it like: asking around the neighborhood,
-	- >
-	- >
-	- > “Who lives at this house number?” — to find the person’s actual name.
-	- >
-	- > In networking terms → ARP helps find the **MAC address** of a device when we only know its **IP address**.
-	- >
+	- Think of it like: asking around the neighborhood,
+	- “Who lives at this house number?” — to find the person’s actual name.
+	- In networking terms → ARP helps find the **MAC address** of a device when we only know its **IP address**.
 	- ### 🌐 1. What is ARP?
 	- **ARP (Address Resolution Protocol)** is a **Network Layer helper protocol** used to map:
 	- ```
@@ -450,7 +446,6 @@
 	- The **switches and routers** at this level don’t understand IP; they only know how to forward frames based on MAC.
 	- So your system needs to ask:
 	- > “Hey — who has IP 192.168.1.1? Tell me your MAC.”
-	- >
 	- And that’s where **ARP** comes in.
 	- ### 📡 3. Step-by-Step: How ARP Works
 	- ### 🧩 Scenario:
@@ -462,7 +457,6 @@
 	- ### 📢 Step 2: ARP Broadcast Request
 	- Your PC broadcasts this message to all devices on the LAN:
 	- > “Who has 192.168.1.1? Tell 192.168.1.5.”
-	- >
 	- 📦 This ARP Request frame looks like:
 	- ```
 	  Destination MAC: FF:FF:FF:FF:FF:FF   (broadcast to everyone)
@@ -472,7 +466,6 @@
 	- ### 💬 Step 3: ARP Reply
 	- Only the device with IP `192.168.1.1` replies back (unicast):
 	- > “I am 192.168.1.1 — my MAC is BB:BB:BB:BB:BB:BB.”
-	- >
 	- 📦 ARP Reply frame:
 	- ```
 	  Destination MAC: AA:AA:AA:AA:AA:AA   (your computer)
@@ -506,13 +499,9 @@
 	- Your NIC wouldn’t know which device to actually hand the data to.
 	- Your packet would never even leave your computer properly.
 	- 🧭 So:
-	- > IP = “Who to send to logically”
-	- >
-	- >
-	- > MAC = “Who to send to physically (on this network)”
-	- >
-	- > ARP = “How to find that physical address”
-	- >
+	- IP = “Who to send to logically”
+	- MAC = “Who to send to physically (on this network)”
+	- ARP = “How to find that physical address”
 	- ### 🗂️ 5. ARP Cache Example (inside your system)
 	- You can view it using:
 	- ```bash
@@ -537,16 +526,12 @@
 	  | **Reason we need MAC** | Ethernet/Wi-Fi can only send using MAC, not IP | The local delivery needs the exact door |
 	  | **Reason we need ARP** | To translate IP → MAC before sending the frame | Finding the right door before handing the letter |
 - ### UDP (User Datagram Protocol)
-  collapsed:: true
 	- ### 🌍 **Layer Information**
 	- **OSI Layer:** Transport Layer (Layer 4)
 	- **TCP/IP Layer:** Transport Layer
 	- ### ⚙️ **Definition**
-	- > UDP (User Datagram Protocol) is a connectionless, unreliable, and lightweight transport layer protocol used to send data quickly between applications over a network.
-	- >
-	- >
-	- > It focuses on **speed and simplicity** rather than reliability.
-	- >
+	- UDP (User Datagram Protocol) is a connectionless, unreliable, and lightweight transport layer protocol used to send data quickly between applications over a network.
+	- It focuses on **speed and simplicity** rather than reliability.
 	- ### 🧩 **Key Characteristics**
 	- | **Feature** | **Description** |
 	  | --- | --- |
@@ -567,10 +552,9 @@
 	- 3. It passes this datagram to the **IP layer**, which handles **delivery to the correct machine** based on the destination IP address.
 	- 4. Once the datagram reaches the target machine, **UDP uses the port number** to deliver it to the correct application (e.g., DNS, video player, etc.).
 	- 5. If packets are lost, duplicated, or arrive out of order — UDP itself doesn’t fix it; the **application** must handle it if necessary.
-	- > 🧩 In short:
-	- >
-	- > - **IP** gets the packet to the **right machine**.
-	- > - **UDP** gets it to the **right application** on that machine.
+	- 🧩 In short:
+	- - **IP** gets the packet to the **right machine**.
+	- - **UDP** gets it to the **right application** on that machine.
 	- ### 🚀 **Advantages**
 	- ✅ Very fast (no connection setup or acknowledgment overhead)
 	- ✅ Lightweight header (8 bytes only)

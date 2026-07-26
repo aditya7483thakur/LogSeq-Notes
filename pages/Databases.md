@@ -409,7 +409,7 @@ collapsed:: true
 	  Replication means maintaining multiple copies of the same data across multiple database servers.
 	  
 	  ```
-	  Primary
+	             Primary
 	                |
 	        ----------------
 	        |              |
@@ -540,7 +540,7 @@ collapsed:: true
 		- ## Architecture
 		  
 		  ```
-		  Writes
+		  			   Writes
 		                    |
 		                    v
 		  
@@ -1709,6 +1709,7 @@ collapsed:: true
 	  5. Partitioning
 	  6. Indexing
 - ### Indexing
+  collapsed:: true
 	- ## Introduction to Indexing
 	  collapsed:: true
 		- ## 1. Why Indexing Exists
