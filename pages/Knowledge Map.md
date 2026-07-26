@@ -5,4 +5,7 @@
 - [[Low Level Design (LLD)]]
 - [[Databases]]
 - [[High Level Design (HLD)]]
+- [[Distributed Systems]]
+- [[Architectural Patterns]]
+-
 -

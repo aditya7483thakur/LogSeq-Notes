@@ -2,5 +2,6 @@
 - [Design Principles](LLD%20%E2%80%93%20Interview%20Prep/Design%20Principles%202f34e785d43480159895f8582679983b.md)
 - [OOPS Concepts](LLD%20%E2%80%93%20Interview%20Prep/OOPS%20Concepts%202f34e785d43480ffbb79d1c9ba79df9e.md)
 - [[GoF Design Patterns]]
-- [Architectural Patterns](LLD%20%E2%80%93%20Interview%20Prep/Architectural%20Patterns%2032b4e785d43480e4862ac990de64aee5.md)
+-
+-
 -
