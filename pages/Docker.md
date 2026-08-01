@@ -40,7 +40,6 @@
 	-
 	-
 - Docker Architecture
-  collapsed:: true
 	- # 1. What is Docker Architecture?
 	  
 	  Docker architecture defines: 
