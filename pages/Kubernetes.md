@@ -318,6 +318,248 @@ collapsed:: true
 			  | Intended for grouping | ✅ | ❌ |
 			  | Size | Small | Can be large |
 			  | Example use | Service → Pods | Tool metadata (Helm, ArgoCD) |
+- ### Kubernetes Extensibility
+  collapsed:: true
+	- ### ✨ Overview
+	  collapsed:: true
+		- Kubernetes is **extensible by design** — you can add new API types and automation without forking Kubernetes itself.
+		- Built-in objects (Pod, Deployment, Service, etc.) cover common cases.
+		- For custom domain logic, you extend the API using:
+			- **CRDs** → define new API schemas
+			- **CRs** → create instances of those schemas
+			- **Operators / Controllers** → reconcile desired state for those instances
+		- 🗣 Interview line:
+			- > "CRDs extend the Kubernetes API. Operators are controllers that manage Custom Resources using the same reconcile loop as built-in controllers."
+	- ### 🟦 **1. Custom Resource Definitions (CRDs)**
+	  collapsed:: true
+		- ### ⭐ 1-Line Meaning
+			- A **CRD** tells Kubernetes: “here is a new kind of API object you should understand.”
+		- ### ⭐ What it is
+			- A cluster-scoped object that **registers a new resource type** in the Kubernetes API.
+			- After a CRD is applied, you can use `kubectl` on that new kind just like Pods or Deployments.
+			- Defines:
+				- **Group** (API group, e.g. `argoproj.io`)
+				- **Version** (e.g. `v1alpha1`, `v1`)
+				- **Kind / Plural name** (e.g. Kind=`Application`, plural=`applications`)
+				- **Schema** (OpenAPI validation for fields under `spec` / `status`)
+				- **Scope** (`Namespaced` or `Cluster`)
+		- ### ⭐ Why CRDs exist
+			- Built-in APIs are not enough for every domain (GitOps apps, certificates, monitoring targets, databases).
+			- CRDs let platforms/tools plug into Kubernetes **without changing core K8s**.
+			- Users manage everything with the same tooling: `kubectl`, YAML, RBAC, GitOps.
+		- ### Example (simplified CRD shape)
+			- ```yaml
+			  apiVersion: apiextensions.k8s.io/v1
+			  kind: CustomResourceDefinition
+			  metadata:
+			    name: certificates.cert-manager.io
+			  spec:
+			    group: cert-manager.io
+			    scope: Namespaced
+			    names:
+			      kind: Certificate
+			      plural: certificates
+			      shortNames: ["cert"]
+			    versions:
+			      - name: v1
+			        served: true
+			        storage: true
+			  ```
+		- ### Important notes
+			- CRD = **schema / type definition**, not the actual object instance.
+			- Installing a CRD does **not** create business logic — you still need a controller/operator to act on it.
+			- CRDs are usually installed by Helm charts / operators (Cert-Manager, ArgoCD, Prometheus Operator).
+	- ### 🟩 **2. Custom Resources (CRs)**
+	  collapsed:: true
+		- ### ⭐ 1-Line Meaning
+			- A **Custom Resource** is an **instance** of a CRD — the actual YAML object you create.
+		- ### ⭐ What it is
+			- Once a CRD exists, you create CRs like:
+				- `Certificate`
+				- `Application` (ArgoCD)
+				- `ServiceMonitor` (Prometheus)
+			- A CR stores **desired state** in etcd via the API Server (same path as built-in objects).
+			- Controllers watch CRs and make cluster state match `spec`.
+		- ### CRD vs CR (must know)
+			- | Concept | Meaning | Analogy |
+			  | --- | --- | --- |
+			  | **CRD** | Defines a new API type | Class / schema |
+			  | **CR** | Instance of that type | Object / row in DB |
+			- Example:
+				- CRD = `kind: CustomResourceDefinition` for `Certificate`
+				- CR = `kind: Certificate` named `my-tls-cert`
+		- ### Example CR
+			- ```yaml
+			  apiVersion: cert-manager.io/v1
+			  kind: Certificate
+			  metadata:
+			    name: example-tls
+			    namespace: default
+			  spec:
+			    secretName: example-tls-secret
+			    issuerRef:
+			      name: letsencrypt-prod
+			      kind: ClusterIssuer
+			    dnsNames:
+			      - example.com
+			  ```
+		- ### Key points
+			- Users declare **what they want** in the CR `spec`.
+			- Operator updates **status** (issued, ready, error, sync state, etc.).
+			- Without an operator watching it, a CR is just stored data — nothing happens.
+	- ### 🟧 **3. Operators / Controllers**
+	  collapsed:: true
+		- ### ⭐ 1-Line Meaning
+			- An **Operator** is a controller that watches Custom Resources and continuously reconciles actual state → desired state.
+		- ### ⭐ Controller (general)
+			- Any loop that:
+			  1. Watches Kubernetes objects (via API Server)
+			  2. Compares desired vs actual
+			  3. Takes action to fix drift
+			- Built-in examples: Deployment controller, ReplicaSet controller, Job controller.
+		- ### ⭐ Operator (specialized controller)
+			- A controller focused on a **domain-specific CRD** (app, database, certificate, CI/CD, monitoring).
+			- Encodes **human operational knowledge** into software:
+				- How to install
+				- How to upgrade
+				- How to backup / restore
+				- How to heal failures
+			- Usually ships as:
+				- CRD(s)
+				- Controller Deployment (the operator pod)
+				- RBAC (Role / ClusterRole + bindings)
+		- ### How they relate
+			- | Piece | Role |
+			  | --- | --- |
+			  | **CRD** | Extends the API (new Kind) |
+			  | **CR** | Declares desired state |
+			  | **Operator/Controller** | Makes desired state real |
+		- ### 🗣 Interview line
+			- > "An Operator is just a Kubernetes controller for Custom Resources — same reconcile pattern as Deployment, but for your domain."
+	- ### 🟨 **4. Operator Pattern**
+	  collapsed:: true
+		- ### ⭐ Core idea
+			- Treat **operational workflows as Kubernetes-native control loops**.
+			- Users apply YAML (CR) → Operator watches → Operator creates/updates Deployments, Services, Secrets, Jobs, etc.
+		- ### Reconcile loop (mental model)
+			- ```
+			  1. User applies Custom Resource (desired state)
+			  2. Operator detects create/update/delete event
+			  3. Operator reads CR.spec
+			  4. Operator checks cluster actual state
+			  5. Operator creates/updates/deletes resources to match
+			  6. Operator writes CR.status
+			  7. Repeat forever (self-healing)
+			  ```
+		- ### Why this pattern is powerful
+			- Same UX as Kubernetes: declarative YAML + `kubectl`
+			- GitOps-friendly (ArgoCD/Flux can sync CRs)
+			- Self-healing and automation instead of manual runbooks
+			- Consistent RBAC / audit / events
+		- ### Typical Operator capabilities
+			- Install / configure an app from a CR
+			- Upgrade versions safely
+			- Rotate credentials / certs
+			- Scale related components
+			- Backup and restore
+			- Failover / healing
+		- ### CRD alone vs Operator
+			- CRD without Operator → API storage only
+			- Operator without CRD → can still watch built-in objects, but loses a clean domain API
+			- **Operator Pattern** usually means: **CRD + CR + Controller**
+	- ### 🟫 **5. Real-world Examples**
+	  collapsed:: true
+		- ### 🎯 ArgoCD Application
+			- **What it is**
+				- ArgoCD defines an `Application` CRD.
+				- An `Application` CR points to a Git repo/path and a destination cluster/namespace.
+			- **What the operator does**
+				- Continuously syncs Git desired state → live Kubernetes resources.
+				- Detects drift, auto-heals (if enabled), reports sync/health status.
+			- **Why it matters**
+				- GitOps becomes a first-class Kubernetes object, not a separate dashboard-only concept.
+			- **Simplified example**
+				- ```yaml
+				  apiVersion: argoproj.io/v1alpha1
+				  kind: Application
+				  metadata:
+				    name: notes-app
+				    namespace: argocd
+				  spec:
+				    project: default
+				    source:
+				      repoURL: https://github.com/example/notes-app
+				      targetRevision: main
+				      path: k8s
+				    destination:
+				      server: https://kubernetes.default.svc
+				      namespace: notes
+				    syncPolicy:
+				      automated:
+				        prune: true
+				        selfHeal: true
+				  ```
+		- ### 🎯 Prometheus ServiceMonitor
+			- **What it is**
+				- Prometheus Operator defines a `ServiceMonitor` CRD.
+				- A `ServiceMonitor` CR tells Prometheus **which Services/Pods to scrape** and how.
+			- **What the operator does**
+				- Watches ServiceMonitors.
+				- Generates / updates Prometheus scrape configs automatically.
+				- Avoids manually editing Prometheus ConfigMaps for every new service.
+			- **Why it matters**
+				- Monitoring targets become declarative Kubernetes objects.
+			- **Simplified example**
+				- ```yaml
+				  apiVersion: monitoring.coreos.com/v1
+				  kind: ServiceMonitor
+				  metadata:
+				    name: notes-app
+				    labels:
+				      release: prometheus
+				  spec:
+				    selector:
+				      matchLabels:
+				        app: notes-app
+				    endpoints:
+				      - port: http
+				        path: /metrics
+				        interval: 30s
+				  ```
+		- ### 🎯 CertManager Certificate
+			- **What it is**
+				- Cert-Manager defines a `Certificate` CRD.
+				- A `Certificate` CR requests a TLS cert for given DNS names.
+			- **What the operator does**
+				- Talks to an Issuer / ClusterIssuer (e.g. Let’s Encrypt).
+				- Completes ACME/DNS/HTTP challenges.
+				- Creates/rotates the TLS Secret automatically.
+				- Renews certs before expiry.
+			- **Why it matters**
+				- Certificate lifecycle is automated inside Kubernetes.
+			- **Simplified example**
+				- ```yaml
+				  apiVersion: cert-manager.io/v1
+				  kind: Certificate
+				  metadata:
+				    name: notes-app-tls
+				    namespace: notes
+				  spec:
+				    secretName: notes-app-tls
+				    issuerRef:
+				      name: letsencrypt-prod
+				      kind: ClusterIssuer
+				    dnsNames:
+				      - notes.example.com
+				  ```
+		- ### Quick comparison
+			- | Example | CR Kind | Operator goal |
+			  | --- | --- | --- |
+			  | ArgoCD | `Application` | Sync Git → cluster (GitOps) |
+			  | Prometheus | `ServiceMonitor` | Auto-configure scrape targets |
+			  | Cert-Manager | `Certificate` | Issue & renew TLS secrets |
+		- ### ⭐ One-line mental model
+			- > **CRD = new API type → CR = desired state YAML → Operator = controller that makes it real.**
 - ### Kubernetes Workloads
   collapsed:: true
 	- ### ✨ Overview
