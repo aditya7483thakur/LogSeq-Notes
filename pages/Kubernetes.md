@@ -15,7 +15,6 @@ collapsed:: true
 	  | **DevOps Needs** | Minimal | Moderate | Needs strong DevOps: CI/CD, containers, orchestration |
 	  | **Example Use** | Early-stage startups, small apps | Enterprise-scale apps before microservices era | Large-scale apps like Netflix, Uber, Amazon |
 - ### What is Kubernetes and its Architecture?
-  collapsed:: true
 	- **Kubernetes (K8s)** is an open-source platform that **automatically manages, deploys, scales, and heals containerized applications** (apps running in Docker containers).
 	- Kubernetes follows a **Master–Worker architecture**, also called **Control Plane + Worker Nodes**.
 	- kubectl is the command-line tool used to talk to the Kubernetes cluster.
@@ -49,6 +48,7 @@ collapsed:: true
 				- Watches API Server → compares desired vs actual → fixes differences.
 				- Examples: Deployment, ReplicaSet, DaemonSet, Job controllers.
 	- ### 🟩 **WORKER NODES**
+	  collapsed:: true
 		- ### **1. Kubelet**
 			- ### ⭐ 1-Line Meaning
 				- The **supervisor** on each node.
@@ -2253,3 +2253,4 @@ collapsed:: true
 		  
 		  ```
 		- You use Deployment → It automatically creates and manages ReplicaSets.
+-
