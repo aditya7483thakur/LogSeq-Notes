@@ -1,4 +1,5 @@
 # 📦 Repository Pattern (with Example)
+collapsed:: true
 	- ## 🔹 Definition
 	  
 	  Repository Pattern introduces a **separate layer for database operations**, so business logic does not directly depend on the database. ([Alex Rusin Blog](https://blog.alexrusin.com/clean-architecture-in-node-js-implementing-the-repository-pattern-with-typescript-and-prisma/?utm_source=chatgpt.com))

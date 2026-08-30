@@ -1,4 +1,5 @@
 ### SQL vs NoSQL (HLD Perspective)
+collapsed:: true
 	- ### Why This Topic Exists
 		- In HLD, the question is not:
 		  
@@ -15,6 +16,7 @@
 		- Relationships
 		- Operational complexity
 		- Examples:
+		  collapsed:: true
 			- PostgreSQL
 			- MySQL
 			- Oracle
@@ -1023,6 +1025,7 @@
 		- Failover improves system resilience.
 		- Replication is the foundation for read scaling in modern systems.
 - ### Database Sharding
+  collapsed:: true
 	- ### Why Sharding Exists
 	  collapsed:: true
 		- Replication solves read scaling and high availability.
@@ -1365,6 +1368,7 @@
 		- Sharding improves scalability but significantly increases system complexity.
 		- Replication and sharding solve different problems and are commonly used together in large-scale systems.
 - ### Database Partitioning
+  collapsed:: true
 	- ### Why Partitioning Exists
 	  collapsed:: true
 		- As data grows, a single table can become extremely large.
@@ -1736,7 +1740,8 @@
 		- Sharding is a distributed form of partitioning.
 		- Partitioning solves performance problems, while sharding solves scalability problems.
 		- Partitioning and sharding are often used together in large-scale systems.
-- ### Indexing
+- ### Database Indexing
+  collapsed:: true
 	- ### Introduction to Indexing
 	  collapsed:: true
 		- ## 1. Why Indexing Exists
@@ -2647,7 +2652,6 @@
 		- ### 6. Comparisons & Design Decisions
 		  collapsed:: true
 			- ### B-Tree vs B+ Tree
-			  collapsed:: true
 				- | Feature | B-Tree | B+ Tree |
 				  | --- | --- | --- |
 				  | Internal nodes | May contain data references | Primarily routing information |
@@ -2703,7 +2707,6 @@
 					  Fewer Page Accesses
 					  ```
 				- Key Difference
-				  collapsed:: true
 					- BSTs optimize navigation through individual nodes, while B+ Trees are designed to efficiently use pages containing many keys.
 			- ### B+ Tree vs Hash Index
 			  collapsed:: true
@@ -2831,92 +2834,1420 @@
 			              ↓
 			  B+ Tree
 			  ```
+	- ### Types of Indexes
+	  collapsed:: true
+		- ### Clustered Index
+		  collapsed:: true
+			- ### What is it?
+			  collapsed:: true
+				- A **Clustered Index organizes the actual table data according to the index key**.
+				- Rows with nearby key values are stored near each other in the database's storage structure.
+				- ```
+				  Clustered Index on id
+				  
+				  Data Pages
+				  
+				  Page 1 → 1, 2, 3
+				  Page 2 → 4, 5, 6
+				  Page 3 → 7, 8, 9
+				  ```
+				- Conceptually:
+				- ```
+				  Search Key
+				    ↓
+				  Clustered B+ Tree
+				    ↓
+				  Actual Table Data
+				  ```
+			- ### Characteristics
+			  collapsed:: true
+				- The table data is organized according to the clustered key.
+				- Nearby key values are stored near each other.
+				- Generally only **one clustered organization** per table.
+				- Particularly efficient for:
+					- Primary key lookups
+					- Range queries
+					- Sequential access
+			- ### Example
+			  collapsed:: true
+				- ```
+				  SELECT *
+				  FROM users
+				  WHERE id BETWEEN 100 AND 200;
+				  ```
+				- The database can find `100` and then efficiently traverse nearby data until `200`.
+			- ### Unique vs Non-Unique
+			  collapsed:: true
+				- A clustered key **does not necessarily have to be unique**.
+				- Example:
+				- ```
+				  department
+				  
+				  Engineering
+				  Engineering
+				  Engineering
+				  HR
+				  HR
+				  Sales
+				  ```
+				- Duplicate values are stored together according to key order. Internally, the database uses additional information to distinguish individual rows.
+				- Clustered Index describes **how data is organized**, not whether duplicates are allowed.
+		- ### Non-Clustered Index
+		  collapsed:: true
+			- ### What is it?
+			  collapsed:: true
+				- A **Non-Clustered Index is a separate data structure from the actual table data**.
+				- It stores:
+				- ```
+				  Indexed Key
+				     +
+				  Row Locator / Reference
+				  ```
+				- Conceptually:
+				- ```
+				  Non-Clustered B+ Tree
+				  
+				  email
+				   ↓
+				  Row Locator
+				   ↓
+				  Actual Table Data
+				  ```
+			- ### Example
+			  collapsed:: true
+				- Actual table data:
+				- ```
+				  id | name   | email
+				  ----------------------------
+				  1  | Aditya | aditya@email.com
+				  2  | Amit   | amit@email.com
+				  3  | Rahul  | rahul@email.com
+				  ```
+				- Non-clustered index on `email`:
+				- ```
+				  aditya@email.com → Row Locator
+				  amit@email.com   → Row Locator
+				  rahul@email.com  → Row Locator
+				  ```
+			- ### Read Flow
+			  collapsed:: true
+				- ```
+				  Query
+				  ↓
+				  Search Non-Clustered Index
+				  ↓
+				  Reach Index Leaf Node
+				  ↓
+				  Get Row Locator
+				  ↓
+				  Locate Actual Row
+				  ```
+				- The row locator can vary depending on the database:
+				- ```
+				  • Physical Row Reference
+				  • Primary / Clustered Key
+				  • Internal Row Identifier
+				  ```
+				- If the locator is a clustered/primary key:
+				- ```
+				  Non-Clustered Index
+				        ↓
+				  Get Primary / Clustered Key
+				        ↓
+				  Search Clustered Index
+				        ↓
+				  Actual Row
+				  ```
+			- ### Characteristics
+			  collapsed:: true
+				- Separate from actual table data.
+				- Multiple non-clustered indexes can exist on a table.
+				- May require an additional table/clustered-index lookup.
+				- Useful for frequently queried columns.
+		- ### Unique Index
+		  collapsed:: true
+			- ### What is it?
+			  collapsed:: true
+				- A **Unique Index prevents duplicate values while also providing index lookup capability**.
+				- Example:
+				- ```
+				  CREATE UNIQUE INDEX idx_users_email
+				  ON users(email);
+				  ```
+				- ```
+				  amit@gmail.com
+				  rahul@gmail.com
+				  aditya@gmail.com
+				  ```
+				- Trying to insert another:
+				- ```
+				  amit@gmail.com
+				  ```
+				- will fail.
+			- ### Significance
+			  collapsed:: true
+				- A unique index provides:
+				- ```
+				  Fast Lookup
+				     +
+				  Database-Level Duplicate Prevention
+				  ```
+				- This is especially important with concurrent requests.
+				- ```
+				  Server A → Insert email
+				  Server B → Insert same email
+				  
+				  Database Unique Index
+				        ↓
+				  Only one succeeds
+				  ```
+			- ### UNIQUE Constraint
+			  collapsed:: true
+				- When defining:
+				- ```
+				  CREATE TABLE users (
+				    id BIGINT PRIMARY KEY,
+				    email VARCHAR(255) UNIQUE
+				  );
+				  ```
+				- the database generally creates and maintains an underlying **unique index or equivalent indexed structure**.
+				- Therefore:
+				- ```
+				  UNIQUE Constraint
+				       ↓
+				  Unique Index / Equivalent Structure
+				       ↓
+				  Fast Lookup
+				  +
+				  Duplicate Prevention
+				  ```
+				- Creating an additional normal index on the same column is usually redundant.
+			- ### Important Distinction
+			  collapsed:: true
+				- ```
+				  Clustered / Non-Clustered
+				  → Describes how the index relates to data storage.
+				  
+				  Unique / Non-Unique
+				  → Describes whether duplicate key values are allowed.
+				  ```
+		- ### Hash Index
+		  collapsed:: true
+			- ### What is it?
+			  collapsed:: true
+				- A **Hash Index uses a hash function to map a key to a bucket/location**.
+				- ```
+				  Key
+				  ↓
+				  Hash Function
+				  ↓
+				  Hash Value
+				  ↓
+				  Bucket
+				  ↓
+				  Row Reference
+				  ```
+				- Example:
+				- ```
+				  SELECT *
+				  FROM users
+				  WHERE email = 'amit@gmail.com';
+				  ```
+				- Conceptually:
+				- ```
+				  hash('amit@gmail.com')
+				        ↓
+				      Bucket
+				        ↓
+				  Row Reference
+				        ↓
+				  Actual Row
+				  ```
+			- ### Best Use Case
+			  collapsed:: true
+				- Hash indexes are particularly efficient for **exact equality lookups**:
+				- ```
+				  WHERE email = 'amit@gmail.com'
+				  ```
+				- Average lookup:
+				- ```
+				  O(1)
+				  ```
+			- ### Limitation: Range Queries
+			  collapsed:: true
+				- Hashing destroys the natural ordering of values.
+				- ```
+				  20 → Bucket 7
+				  21 → Bucket 91
+				  22 → Bucket 3
+				  23 → Bucket 65
+				  ```
+				- Therefore, it cannot efficiently support:
+				- ```
+				  WHERE age > 25
+				  ```
+				- ```
+				  WHERE age BETWEEN 20 AND 30
+				  ```
+				- or:
+				- ```
+				  ORDER BY age
+				  ```
+			- ### Hash Collision
+				- Different keys can produce the same hash and land in the same bucket:
+				- ```
+				  hash('Amit')  → Bucket 10
+				  hash('Rahul') → Bucket 10
+				  ```
+				- The hash only finds the bucket. The database still compares the actual key to pick the right row.
+				- ### Chaining
+					- Each bucket holds a small list of `(key, row reference)` pairs.
+					- ```
+					  Bucket 10
+					    → (Amit,  row_A)
+					    → (Rahul, row_R)
+					  ```
+					- Lookup: go to Bucket 10, then walk the list until the key matches.
+					- Insert: append to that list.
+				- ### Open Addressing
+					- The table stores one entry per slot. If Bucket 10 is full, try the next empty slot:
+					- ```
+					  Bucket 10 → Amit
+					  Bucket 11 → Rahul   (overflow from 10)
+					  Bucket 12 → empty
+					  ```
+					- Lookup: start at the hashed bucket and keep probing `10, 11, 12...` until the key is found or an empty slot appears.
+				- A few collisions are cheap. Too many means longer lists or longer probe sequences, so lookup drifts away from O(1).
+			- ### Hash Index vs B+ Tree
+			  collapsed:: true
+				- | Feature | Hash Index | B+ Tree Index |
+				  | ---- | ---- | ---- |
+				  | Equality Lookup | Excellent | Excellent |
+				  | Range Queries | ❌ | ✅ |
+				  | Ordered Traversal | ❌ | ✅ |
+				  | `ORDER BY` | ❌ | ✅ |
+				  | General Purpose | Limited | Excellent |
+				  | Lookup | ~O(1) average | O(log N) |
+			- ### Key Takeaway
+			  collapsed:: true
+				- ```
+				  Hash Index
+				  → Best for exact key lookup.
+				  
+				  B+ Tree
+				  → Supports equality
+				  + range queries
+				  + ordered traversal
+				  ```
+				- Because databases commonly need multiple query patterns, **B+ Trees are generally more versatile and widely used as general-purpose indexe**
+	- ### Composite Indexes
+	  collapsed:: true
+		- ### What is a Composite Index?
+		  collapsed:: true
+			- A **Composite Index** is an index created using **multiple columns together**.
+			- Example:
+			- ```
+			  CREATE INDEX idx_user_status
+			  ON orders(user_id, status);
+			  ```
+			- Conceptually, the B+ Tree stores and sorts **combinations of column values**:
+			- ```
+			  (user_id, status)
+			  
+			  (101, COMPLETED)
+			  (101, PENDING)
+			  (101, SHIPPED)
+			  
+			  (102, COMPLETED)
+			  (102, PENDING)
+			  ```
+			- The ordering is:
+			- ```
+			  First by user_id
+			        ↓
+			  Then by status within the same user_id
+			  ```
+			- A composite index is **not simply two independent indexes combined**.
+			- ```
+			  INDEX(user_id)
+			  +
+			  INDEX(status)
+			  
+			  ≠
+			  
+			  INDEX(user_id, status)
+			  ```
+			- The composite index creates one index structure containing the **combined key**.
+		- ### Why Use Multiple Columns?
+		  collapsed:: true
+			- Consider the query:
+			- ```
+			  SELECT *
+			  FROM orders
+			  WHERE user_id = 101
+			  AND status = 'PENDING';
+			  ```
+			- With separate indexes:
+			- ```
+			  INDEX(user_id)
+			  INDEX(status)
+			  ```
+			- the database may need to:
+			- ```
+			  Search user_id index
+			        ↓
+			  Get matching row references
+			  
+			  Search status index
+			        ↓
+			  Get matching row references
+			  
+			  Intersect / combine results
+			        ↓
+			  Fetch matching rows
+			  ```
+			- With a composite index:
+			- ```
+			  INDEX(user_id, status)
+			  ```
+			- the database can navigate directly to the combined key:
+			- ```
+			  (user_id = 101, status = PENDING)
+			  ```
+			- Conceptually:
+			- ```
+			  One B+ Tree
+			      ↓
+			  Navigate to the specific combination
+			      ↓
+			  Matching entries
+			  ```
+			- ### Key Advantage
+				- A composite index can reduce the amount of data the database needs to examine for queries filtering on multiple related columns.
+		- ### Leftmost Prefix Rule
+		  collapsed:: true
+			- For an index:
+			- ```
+			  INDEX(user_id, status)
+			  ```
+			- the B+ Tree is ordered as:
+			- ```
+			  user_id
+			    ↓
+			  status
+			  ```
+			- Therefore, the index can efficiently support:
+			- ```
+			  WHERE user_id = 101
+			  ```
+			- ```
+			  WHERE user_id = 101
+			  AND status = 'PENDING'
+			  ```
+			- But generally not an efficient direct lookup for:
+			- ```
+			  WHERE status = 'PENDING'
+			  ```
+			- because all `status = PENDING` entries are not necessarily stored together.
+			- Example:
+			- ```
+			  (101, COMPLETED)
+			  (101, PENDING)
+			  
+			  (102, COMPLETED)
+			  (102, PENDING)
+			  
+			  (103, PENDING)
+			  ```
+			- The index can efficiently use prefixes starting from the **leftmost column**.
+			- For:
+			- ```
+			  INDEX(A, B, C)
+			  ```
+			- think:
+			- ```
+			  A              ✅
+			  A + B          ✅
+			  A + B + C      ✅
+			  
+			  B              ❌ Generally
+			  C              ❌ Generally
+			  B + C          ❌ Generally
+			  ```
+			- ### Key Idea
+				- A composite B+ Tree index is primarily useful when the query uses the **leftmost prefix** of the indexed columns.
+		- ### Column Order
+		  collapsed:: true
+			- The order of columns in a composite index matters.
+			- These are different indexes:
+			- ```
+			  INDEX(user_id, status)
+			  ```
+			- ```
+			  INDEX(status, user_id)
+			  ```
+			- ### `(user_id, status)`
+				- Efficiently supports:
+				- ```
+				  WHERE user_id = ?
+				  ```
+				- ```
+				  WHERE user_id = ?
+				  AND status = ?
+				  ```
+			- ### `(status, user_id)`
+				- Efficiently supports:
+				- ```
+				  WHERE status = ?
+				  ```
+				- ```
+				  WHERE status = ?
+				  AND user_id = ?
+				  ```
+				- Therefore:
+				- **The same columns in a different order create a different index structure and support different leading query patterns.**
+			- ### Choosing Column Order
+			  collapsed:: true
+				- Column order should primarily depend on:
+				- ```
+				  Application Query Patterns
+				        ↓
+				  Columns used for equality
+				        ↓
+				  Columns used for ranges
+				        ↓
+				  Selectivity and data distribution
+				  ```
+				- A useful starting heuristic:
+				- ```
+				  Equality Columns
+				        ↓
+				  Range Columns
+				        ↓
+				  Other columns based on query requirements
+				  ```
+				- Example:
+				- ```
+				  WHERE user_id = 101
+				  AND created_at > '2026-01-01'
+				  ```
+				- A commonly useful index:
+				- ```
+				  INDEX(user_id, created_at)
+				  ```
+				- Conceptually:
+				- ```
+				  Find user_id = 101
+				        ↓
+				  Within that user's entries,
+				  created_at is ordered
+				        ↓
+				  Find starting date
+				        ↓
+				  Scan forward
+				  ```
+		- ### Multiple Composite Indexes
+		  collapsed:: true
+			- Multiple composite indexes can exist on the same table.
+			- Example:
+			- ```
+			  CREATE INDEX idx_user_status
+			  ON orders(user_id, status);
+			  
+			  CREATE INDEX idx_status_user
+			  ON orders(status, user_id);
+			  ```
+			- These create two separate index data structures.
+			- ```
+			  orders
+			  │
+			  ├── idx_user_status
+			  │      → (user_id, status)
+			  │
+			  └── idx_status_user
+			       → (status, user_id)
+			  ```
+			- This may be useful when the application has different query patterns:
+			- ```
+			  WHERE user_id = ?
+			  ```
+			- and:
+			- ```
+			  WHERE status = ?
+			  ```
+			- However, additional indexes increase:
+			- ```
+			  Storage Usage
+			  +
+			  Write Overhead
+			  +
+			  Index Maintenance Cost
+			  ```
+			- Therefore, indexes should only be added when justified by actual query patterns.
+		- ### How the Database Chooses an Index
+		  collapsed:: true
+			- When multiple indexes exist, the database does not randomly choose one.
+			- ```
+			  SQL Query
+			    ↓
+			  Query Parser
+			    ↓
+			  Query Optimizer / Planner
+			    ↓
+			  Generate possible execution plans
+			    ↓
+			  Estimate cost
+			    ↓
+			  Choose cheapest plan
+			  ```
+			- Example:
+			- ```
+			  WHERE user_id = 101
+			  AND status = 'PENDING'
+			  ```
+			- Possible options:
+			- ```
+			  Use INDEX(user_id, status)
+			            ↓
+			  Estimate Cost
+			  
+			  Use INDEX(status, user_id)
+			            ↓
+			  Estimate Cost
+			  
+			  Use Multiple Indexes
+			            ↓
+			  Estimate Cost
+			  
+			  Full Table Scan
+			            ↓
+			  Estimate Cost
+			  ```
+			- The optimizer considers factors such as:
+				- Query conditions
+				- Available indexes
+				- Data distribution
+				- Selectivity
+				- Database statistics
+				- Number of rows expected to match
+				- Cost of fetching actual rows
+				- Whether the index covers the query
+			- **An existing index is not guaranteed to be used. The database may choose another index or even a full table scan if it estimates that option is cheaper.**
+		- ### Real Examples
+		  collapsed:: true
+			- ### Example 1: User Orders
+				- Query:
+				- ```
+				  SELECT *
+				  FROM orders
+				  WHERE user_id = 101
+				  AND status = 'PENDING';
+				  ```
+				- Suitable index:
+				- ```
+				  INDEX(user_id, status)
+				  ```
+			- ### Example 2: Orders by User and Date
+				- Query:
+				- ```
+				  SELECT *
+				  FROM orders
+				  WHERE user_id = 101
+				  AND created_at > '2026-01-01';
+				  ```
+				- Suitable index:
+				- ```
+				  INDEX(user_id, created_at)
+				  ```
+				- Reason:
+				- ```
+				  user_id → Equality
+				  created_at → Range
+				  ```
+			- ### Example 3: Searching by Status Alone
+				- Query:
+				- ```
+				  SELECT *
+				  FROM orders
+				  WHERE status = 'PENDING';
+				  ```
+				- If the existing index is:
+				- ```
+				  INDEX(user_id, status)
+				  ```
+				- it generally cannot provide the normal leftmost-prefix lookup advantage for `status` alone.
+				- A separate index may be required:
+				- ```
+				  INDEX(status)
+				  ```
+				- or a differently ordered composite index:
+				- ```
+				  INDEX(status, user_id)
+				  ```
+				- depending on application query patterns.
+		- ### Key Takeaways
+		  collapsed:: true
+			- ```
+			  Composite Index
+			        ↓
+			  One index structure using multiple columns
+			  ```
+			- ```
+			  INDEX(A, B)
+			        ↓
+			  Supports A
+			  Supports A + B
+			  Generally does not efficiently support B alone
+			  ```
+			- ```
+			  Column Order Matters
+			  (A, B) ≠ (B, A)
+			  ```
+			- ```
+			  Design Indexes
+			  Based on Query Patterns
+			  Not Simply Based on Table Columns
+			  ```
+			- ```
+			  More Indexes
+			        ↓
+			  Faster Reads
+			        +
+			  More Storage
+			        +
+			  More Write / Maintenance Overhead
+			  ```
+			- **A composite index is designed around how columns are queried together. Its column order determines how the B+ Tree is ordered, which directly determines which query patterns can efficiently use the index.**
+	- ### Covering Indexes
+	  collapsed:: true
+		- ### What is a Covering Index?
+		  collapsed:: true
+			- A **Covering Index** is an index that contains **all the columns required to execute a specific query**.
+			- Example index:
+			- ```
+			  INDEX(user_id, status)
+			  ```
+			- Query:
+			- ```
+			  SELECT status
+			  FROM orders
+			  WHERE user_id = 101;
+			  ```
+			- The query needs:
+			- ```
+			  WHERE  → user_id
+			  SELECT → status
+			  ```
+			- Both columns are available in the index:
+			- ```
+			  (user_id, status)
+			  ```
+			- Therefore, this index **covers the query**.
+			- ```
+			  Index
+			  ↓
+			  Find user_id = 101
+			  ↓
+			  status is already available
+			  ↓
+			  Return Result
+			  ```
+			- **An index is not inherently a covering index. It is covering relative to a particular query.**
+			- The same index may cover one query but not another.
+			- Example:
+			- ```
+			  SELECT status
+			  FROM orders
+			  WHERE user_id = 101;
+			  ```
+			- ```
+			  Covered ✅
+			  ```
+			- But:
+			- ```
+			  SELECT amount
+			  FROM orders
+			  WHERE user_id = 101;
+			  ```
+			- ```
+			  Not Covered ❌
+			  ```
+			- because `amount` is not available in:
+			- ```
+			  INDEX(user_id, status)
+			  ```
+		- ### Index-Only Scan
+		  collapsed:: true
+			- An **Index-Only Scan** is an execution strategy where the database executes a query using **only the index**, without reading the actual table rows.
+			- Example:
+			- ```
+			  INDEX(user_id, status)
+			  ```
+			- Query:
+			- ```
+			  SELECT status
+			  FROM orders
+			  WHERE user_id = 101;
+			  ```
+			- Execution:
+			- ```
+			  Search Index
+			     ↓
+			  Find user_id = 101
+			     ↓
+			  Read status from Index
+			     ↓
+			  Return Result
+			  ```
+			- No table lookup is required.
+			- ### Covering Index vs Index-Only Scan
+				- ```
+				  Covering Index
+				      ↓
+				  A property of the Index relative to a Query
+				      ↓
+				  "The index contains everything required"
+				  ```
+				- ```
+				  Index-Only Scan
+				      ↓
+				  An execution strategy
+				      ↓
+				  "The database executes the query using only the index"
+				  ```
+				- Relationship:
+				- ```
+				  Index contains all required columns
+				            ↓
+				  It is a Covering Index for that query
+				            ↓
+				  Index-Only Scan becomes possible
+				            ↓
+				  Optimizer decides whether to use it
+				  ```
+				- **Covering Index = Capability**
+				- **Index-Only Scan = Execution**
+		- ### Avoiding Table Lookup
+		  collapsed:: true
+			- With a normal index:
+			- ```
+			  Index
+			  ↓
+			  Find Matching Entry
+			  ↓
+			  Row Reference / Pointer
+			  ↓
+			  Go to Table/Data Page
+			  ↓
+			  Fetch Required Column
+			  ```
+			- Example:
+			- ```
+			  INDEX(user_id)
+			  ```
+			- Query:
+			- ```
+			  SELECT status
+			  FROM orders
+			  WHERE user_id = 101;
+			  ```
+			- The index can find the matching rows but does not contain `status`.
+			- Therefore:
+			- ```
+			  Index Search
+			    ↓
+			  Row Reference
+			    ↓
+			  Table/Data Page Lookup
+			    ↓
+			  Read status
+			  ```
+			- With a covering index:
+			- ```
+			  INDEX(user_id, status)
+			  ```
+			- ```
+			  Index Search
+			    ↓
+			  Required Data Already Exists in Index
+			    ↓
+			  Return Result
+			  ```
+			- ### Why does this matter?
+				- Following row references may require additional data-page accesses.
+				- For a query returning many rows:
+				- ```
+				  Index finds many matching entries
+				        ↓
+				  Many Row References
+				        ↓
+				  Potentially many additional Table/Data Page accesses
+				  ```
+				- A covering index can avoid these additional accesses.
+				- **Avoiding table lookups can significantly improve performance, especially when a query returns many matching rows.**
+				- Note:
+				- ```
+				  100,000 matching rows
+				  ≠
+				  necessarily 100,000 disk reads
+				  ```
+				- Multiple rows can exist on the same page, and databases also use caching.
+				- The key benefit is:
+				- **The database avoids additional table/data-page accesses after finding the matching index entries.**
+		- ### Real Examples
+		  collapsed:: true
+			- ### Example 1
+				- Index:
+				- ```
+				  INDEX(user_id, status)
+				  ```
+				- Query:
+				- ```
+				  SELECT status
+				  FROM orders
+				  WHERE user_id = 101;
+				  ```
+				- Required columns:
+				- ```
+				  user_id → Filtering
+				  status  → Returning
+				  ```
+				- Both are in the index.
+				- ```
+				  Covering Index      → Yes ✅
+				  Index-Only Scan     → Possible ✅
+				  Table Lookup        → Not Required
+				  ```
+			- ### Example 2
+				- Index:
+				- ```
+				  INDEX(user_id, status)
+				  ```
+				- Query:
+				- ```
+				  SELECT amount
+				  FROM orders
+				  WHERE user_id = 101;
+				  ```
+				- Required columns:
+				- ```
+				  user_id → Filtering
+				  amount  → Returning
+				  ```
+				- `amount` is not in the index.
+				- ```
+				  Covering Index      → No ❌
+				  Index-Only Scan     → Not Possible
+				  Table Lookup        → Required
+				  ```
+			- ### Example 3
+				- Index:
+				- ```
+				  INDEX(user_id, created_at, status)
+				  ```
+				- Query:
+				- ```
+				  SELECT status
+				  FROM orders
+				  WHERE user_id = 101
+				  AND created_at > '2026-01-01';
+				  ```
+				- Required columns:
+				- ```
+				  user_id     → Filtering
+				  created_at  → Filtering
+				  status      → Returning
+				  ```
+				- All required columns exist in the index.
+				- ```
+				  Covering Index      → Yes ✅
+				  Index-Only Scan     → Possible ✅
+				  Table Lookup        → Not Required
+				  ```
+		- ### Key Takeaways
+		  collapsed:: true
+			- ```
+			  Normal Index
+			    ↓
+			  Helps Find Matching Rows
+			    ↓
+			  May Need Table Lookup
+			  ```
+			- ```
+			  Covering Index
+			    ↓
+			  Helps Find Matching Rows
+			    +
+			  Contains Required Query Data
+			    ↓
+			  Table Lookup Can Be Avoided
+			  ```
+			- ```
+			  Covering Index
+			        ↓
+			  Property / Capability
+			  
+			  Index-Only Scan
+			        ↓
+			  Execution Strategy
+			  ```
+			- **A covering index contains all the data required for a specific query. An index-only scan is the database execution strategy of answering that query using only the index, without following row references back to the actual table.**
+	- ### Index Optimization
+	  collapsed:: true
+		- ### 6.1 Cardinality
+		  collapsed:: true
+			- **Cardinality = Number of distinct values in a column.**
+			- Example:
+			- ```
+			  user_id
+			  1
+			  2
+			  3
+			  4
+			  ...
+			  ```
+			- Almost every value is different:
+			- ```
+			  High Cardinality
+			  ```
+			- Example:
+			- ```
+			  status
+			  
+			  PENDING
+			  COMPLETED
+			  CANCELLED
+			  ```
+			- Only a few distinct values:
+			- ```
+			  Low Cardinality
+			  ```
+			- ### Why it matters
+				- Generally:
+				- ```
+				  High Cardinality
+				      ↓
+				  More distinct values
+				      ↓
+				  Can narrow down data effectively
+				      ↓
+				  Index is often more useful
+				  ```
+				- ```
+				  Low Cardinality
+				      ↓
+				  Few distinct values
+				      ↓
+				  A condition may match many rows
+				      ↓
+				  Index may be less useful
+				  ```
+				- However:
+				- **Cardinality alone does not determine whether an index will be useful. Data distribution and the specific query also matter.**
+				- For example, `status` may have low cardinality but:
+				- ```
+				  PENDING   → 99,998,000 rows
+				  COMPLETED → 1,000 rows
+				  CANCELLED → 1,000 rows
+				  ```
+				- An index on `status` can still be useful for:
+				- ```
+				  WHERE status = 'COMPLETED'
+				  ```
+		- ### 6.2 Selectivity
+		  collapsed:: true
+			- **Selectivity describes how effectively a query condition reduces the number of rows.**
+			- ```
+			  Total Rows
+			    ↓
+			  Apply WHERE condition
+			    ↓
+			  Matching Rows
+			  ```
+			- Example:
+			- ```
+			  100,000,000 rows
+			       ↓
+			  WHERE user_id = 101
+			       ↓
+			  1 row
+			  ```
+			- This is **highly selective**.
+			- Example:
+			- ```
+			  100,000,000 rows
+			       ↓
+			  WHERE status = 'PENDING'
+			       ↓
+			  40,000,000 rows
+			  ```
+			- This has **low selectivity**.
+			- Generally:
+			- ```
+			  High Selectivity
+			      ↓
+			  Few matching rows
+			      ↓
+			  Index is often useful
+			  ```
+			- ```
+			  Low Selectivity
+			      ↓
+			  Many matching rows
+			      ↓
+			  Index may be less useful
+			  ```
+			- ### Cardinality vs Selectivity
+				- ```
+				  Cardinality
+				    ↓
+				  How many distinct values exist in a column?
+				  ```
+				- ```
+				  Selectivity
+				    ↓
+				  How effectively does a specific query condition reduce rows?
+				  ```
+				- Example:
+				- ```
+				  status has:
+				  
+				  PENDING
+				  COMPLETED
+				  CANCELLED
+				  ```
+				- ```
+				  Cardinality = 3
+				  ```
+				- But:
+				- ```
+				  WHERE status = 'PENDING'
+				  ```
+				- may return:
+				- ```
+				  40 million rows → Low Selectivity
+				  ```
+				- while:
+				- ```
+				  WHERE status = 'CANCELLED'
+				  ```
+				- may return:
+				- ```
+				  100 rows → High Selectivity
+				  ```
+				- **Cardinality describes the column; selectivity describes the effect of a particular query condition.**
+		- ### 6.3 Why Indexes Are Ignored
+		  collapsed:: true
+			- Creating an index does **not guarantee** that the database will use it.
+			- ```
+			  Index Exists
+			     ↓
+			  Optimizer compares possible plans
+			     ↓
+			  Another plan is estimated to be cheaper
+			     ↓
+			  Index may be ignored
+			  ```
+			- ### 1. Low Selectivity
+				- Example:
+				- ```
+				  100 million rows
+				  
+				  WHERE status = 'PENDING'
+				       ↓
+				  70 million matching rows
+				  ```
+				- Using an index may require:
+				- ```
+				  Index Scan
+				    ↓
+				  Find millions of entries
+				    ↓
+				  Follow many row references
+				    ↓
+				  Access many table/data pages
+				  ```
+				- A sequential table scan may be cheaper.
+			- ### 2. Query Returns a Large Percentage of the Table
+				- If a query needs most of the table:
+				- ```
+				  100 million rows
+				       ↓
+				  80 million rows required
+				  ```
+				- Using an index may add unnecessary work:
+				- ```
+				  Read Index
+				    +
+				  Fetch most of the Table Rows
+				  ```
+				- Instead:
+				- ```
+				  Sequentially Scan Table
+				  ```
+				- may be cheaper.
+			- ### 3. Function Applied to Indexed Column
+				- Suppose:
+				- ```
+				  INDEX(email)
+				  ```
+				- This can efficiently use the index:
+				- ```
+				  WHERE email = 'amit@gmail.com'
+				  ```
+				- But:
+				- ```
+				  WHERE LOWER(email) = 'amit@gmail.com'
+				  ```
+				- may not efficiently use a normal `INDEX(email)` because the B+ Tree is ordered by the original `email` values, not necessarily `LOWER(email)` values.
+				- A possible solution is an expression/functional index where supported:
+				- ```
+				  INDEX(LOWER(email))
+				  ```
+			- ### 4. Type Conversion
+				- Suppose:
+				- ```
+				  user_id → INTEGER
+				  ```
+				- and:
+				- ```
+				  INDEX(user_id)
+				  ```
+				- A query like:
+				- ```
+				  WHERE user_id = 101
+				  ```
+				- can directly use the indexed values.
+				- But:
+				- ```
+				  WHERE CAST(user_id AS VARCHAR) = '101'
+				  ```
+				- may prevent efficient use of the normal index because the indexed column is being transformed.
+			- ### 5. Leading Wildcard
+				- With:
+				- ```
+				  INDEX(email)
+				  ```
+				- This can often efficiently use a B+ Tree:
+				- ```
+				  WHERE email LIKE 'aditya%'
+				  ```
+				- because values beginning with `aditya` are grouped together in sorted order.
+				- But:
+				- ```
+				  WHERE email LIKE '%gmail.com'
+				  ```
+				- generally cannot efficiently use a normal B+ Tree index for direct lookup because values are ordered by their beginning, not their ending.
+			- ### 6. Outdated or Inaccurate Statistics
+				- The optimizer relies on statistics to estimate:
+				- ```
+				  How many rows will match?
+				  How expensive will each plan be?
+				  ```
+				- If statistics are inaccurate:
+				- ```
+				  Incorrect Statistics
+				        ↓
+				  Incorrect Row Estimate
+				        ↓
+				  Incorrect Cost Estimate
+				        ↓
+				  Potentially Bad Execution Plan
+				  ```
+			- ### 7. Another Index or Plan Is Cheaper
+				- A table can have multiple indexes:
+				- ```
+				  INDEX(user_id)
+				  
+				  INDEX(status)
+				  
+				  INDEX(user_id, status)
+				  ```
+				- For a query:
+				- ```
+				  WHERE user_id = 101
+				  AND status = 'PENDING'
+				  ```
+				- multiple indexes may be usable.
+				- The optimizer estimates the cost of each possible plan and chooses the cheapest estimated one.
+				- **An index may be ignored simply because another index or execution plan is estimated to be cheaper.**
+		- ### 6.4 Optimizer Decisions
+		  collapsed:: true
+			- The **Query Optimizer** decides the most efficient way to execute a query.
+			- SQL specifies:
+			- **What data is required**
+			- The optimizer decides:
+			- **How to retrieve that data**
+			- Example:
+			- ```
+			  SELECT *
+			  FROM orders
+			  WHERE user_id = 101
+			  AND status = 'PENDING';
+			  ```
+			- The optimizer may consider:
+			- ```
+			  Plan 1 → Use INDEX(user_id)
+			  
+			  Plan 2 → Use INDEX(status)
+			  
+			  Plan 3 → Use INDEX(user_id, status)
+			  
+			  Plan 4 → Full Table Scan
+			  ```
+			- ### How the Optimizer Chooses
+				- ```
+				  SQL Query
+				    ↓
+				  Generate Possible Execution Plans
+				    ↓
+				  Check Available Indexes
+				    ↓
+				  Use Statistics
+				    ↓
+				  Estimate Matching Rows
+				    ↓
+				  Estimate Cost
+				    ↓
+				  Compare Plans
+				    ↓
+				  Choose Cheapest Estimated Plan
+				  ```
+				- The optimizer uses statistics/metadata about the table and indexes.
+				- Statistics may contain information such as:
+				- ```
+				  ├── Approximate Number of Rows
+				  ├── Number of Distinct Values
+				  ├── Value Distribution
+				  ├── Histograms
+				  ├── NULL Distribution
+				  ├── Minimum / Maximum Values
+				  ├── Table Size / Number of Pages
+				  └── Index Information
+				  ```
+				- These statistics help estimate:
+				- ```
+				  Cardinality
+				     +
+				  Selectivity
+				     +
+				  Expected Matching Rows
+				     +
+				  Page Reads
+				     +
+				  CPU Work
+				     +
+				  Table Lookups
+				  ```
+				- The optimizer then compares the estimated costs.
+			- ### Estimated Cost vs Actual Cost
+				- The optimizer chooses:
+				- **The cheapest estimated plan, not necessarily the actual cheapest plan.**
+				- ```
+				  Best Estimated Plan
+				        ≠
+				  Always Best Actual Plan
+				  ```
+				- If statistics are outdated:
+				- ```
+				  Actual Data
+				      ≠
+				  Optimizer Statistics
+				      ↓
+				  Incorrect Estimates
+				      ↓
+				  Potentially Poor Plan
+				  ```
+			- ### Optimizer and Covering Indexes
+				- The optimizer also checks whether an index covers the query.
+				- ```
+				  Index Contains:
+				  ├── Filtering Columns
+				  └── Required Result Columns
+				  ```
+				- Then:
+				- ```
+				  Covering Index
+				      ↓
+				  Index-Only Scan Possible
+				      ↓
+				  Avoid Table Lookup
+				      ↓
+				  Potentially Lower Cost
+				  ```
+		- ### Key Takeaways
+		  collapsed:: true
+			- ```
+			  Cardinality
+			    ↓
+			  Number of distinct values in a column
+			  ```
+			- ```
+			  Selectivity
+			    ↓
+			  How effectively a query condition reduces rows
+			  ```
+			- ```
+			  Index Exists
+			    ≠
+			  Index Will Definitely Be Used
+			  ```
+			- ```
+			  Optimizer
+			    ↓
+			  Uses Statistics
+			    ↓
+			  Estimates Rows and Cost
+			    ↓
+			  Compares Possible Plans
+			    ↓
+			  Chooses Cheapest Estimated Plan
+			  ```
+			- **Indexes provide possible paths for retrieving data. The query optimizer uses statistics, cardinality, selectivity, and cost estimation to decide which execution plan it believes will be the most efficient.**
 -
-- Indexing
+- Connection Pooling
   │
-  ├── 1. Introduction to Indexing
-  │     ├── Why Indexing Exists
-  │     ├── Full Table Scan
-  │     ├── What is an Index?
-  │     ├── Index vs Table
-  │     ├── How Indexes Improve Performance
-  │     └── Read Path With vs Without Index
+  ├── 1. Why Database Connections Are Expensive
+  │     ├── What Happens When a Connection Is Created
+  │     ├── TCP / Network Setup
+  │     ├── Authentication
+  │     └── Why Creating One Per Request Is Bad
   │
-  ├── 2. Tradeoffs & Best Practices
-  │     ├── Read vs Write Tradeoff
-  │     ├── Storage Overhead
-  │     ├── Index Maintenance
-  │     ├── When to Create an Index
-  │     └── When NOT to Create an Index
+  ├── 2. What Is Connection Pooling?
+  │     ├── Basic Idea
+  │     ├── Pool of Reusable Connections
+  │     └── Request Lifecycle With a Pool
   │
-  ├── 3. B+ Tree (Index Internals)
-  │     ├── Why B+ Trees?
-  │     ├── Structure
-  │     ├── Search
-  │     ├── Insert
-  │     ├── Delete
-  │     └── Why Not BST / Hash Table?
+  ├── 3. Connection Pool Internals
+  │     ├── Idle Connections
+  │     ├── Active / Borrowed Connections
+  │     ├── Acquiring a Connection
+  │     ├── Returning a Connection
+  │     └── Pool Size
   │
-  ├── 4. Types of Indexes
-  │     ├── Clustered Index
-  │     ├── Non-Clustered Index
-  │     ├── Unique Index
-  │     ├── Composite Index
-  │     ├── Covering Index
-  │     └── Hash Index (Brief)
+  ├── 4. Pool Exhaustion & Waiting
+  │     ├── What Happens When All Connections Are Busy?
+  │     ├── Request Queue / Waiting
+  │     ├── Connection Timeout
+  │     └── Why Increasing Pool Size Is Not Always the Solution
   │
-  ├── 5. Composite & Covering Indexes
-  │     ├── Leftmost Prefix Rule
-  │     ├── Column Order
-  │     ├── Covering Index
-  │     └── Real Examples
+  ├── 5. Connection Pool Sizing
+  │     ├── Why Too Few Connections Is Bad
+  │     ├── Why Too Many Connections Is Also Bad
+  │     ├── Database Connection Limits
+  │     └── Multiple Application Instances Problem
   │
-  ├── 6. Index Optimization
-  │     ├── Cardinality
-  │     ├── Selectivity
-  │     ├── Why Indexes Are Ignored
-  │     └── Optimizer Decisions
+  ├── 6. Common Interview Concepts
+  │     ├── Why Not Create a Connection Per Request?
+  │     ├── Why Not Keep Unlimited Connections?
+  │     ├── Connection Pool vs Database Connection Limit
+  │     └── Common Real-World Problems
   │
-  ├── 7. Common Interview Questions
-  │
-  └── 8. Key Takeaways
-	- ├── 3. B+ Tree (Index Internals)
-	  │     ├── Why B+ Trees?
-	  │     ├── Structure
-	  │     ├── Search
-	  │     ├── Insert
-	  │     ├── Delete
-	  │     └── Why Not BST / Hash Table?
-- ## 1. Indexing ⭐⭐⭐⭐⭐ 
-  
-  This is one of the most important topics.
-  
-  You should understand:
-- Why indexes exist
-- B+ Trees
-- Clustered vs Non-clustered Index
-- Composite Indexes
-- Covering Indexes
-- Index Selectivity
-- Why too many indexes are bad
-- When indexes are not used
-  
-  This is asked in almost every backend interview.
-  
-  ---
-- ## 2. Connection Pooling ⭐⭐⭐
-  
-  Small topic.
-  
-  30–40 minutes.
-  
-  But interviewers love asking:
-  
-  > 
-  
-  Why don't we open a new DB connection for every request?
-  
-  ---
+  └── 7. Practical Considerations
+        ├── Connection Leaks
+        ├── Idle Connection Timeout
+        ├── Long-Running Queries
+        └── Monitoring Pool Usage
 - ## 3. Distributed Transactions ⭐⭐
   
   Not in depth.
