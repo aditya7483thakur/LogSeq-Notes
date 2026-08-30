@@ -1,6 +1,5 @@
 ### SQL vs NoSQL (HLD Perspective)
-collapsed:: true
-	- ## Why This Topic Exists
+	- ### Why This Topic Exists
 		- In HLD, the question is not:
 		  
 		  "What database should I learn?"
@@ -15,7 +14,6 @@ collapsed:: true
 		- Query flexibility
 		- Relationships
 		- Operational complexity
-		- 1. Replication (VERY IMPORTANT)
 		- Examples:
 			- PostgreSQL
 			- MySQL
@@ -135,7 +133,7 @@ collapsed:: true
 			  must be coordinated.
 			  
 			  ---
-	- # NoSQL Databases
+	- ### NoSQL Databases
 		- Examples:
 			- MongoDB
 			- Cassandra
@@ -230,30 +228,29 @@ collapsed:: true
 			  during failures.
 			  
 			  ---
-	- # Modern Reality
-	  
-	  A common misconception:
-	  
-	  ```
-	  SQL = Transactions
-	  
-	  NoSQL = No Transactions
-	  ```
-	  
-	  This is outdated.
-	  
-	  Modern MongoDB supports:
-	- ACID Transactions
-	- Multi-document Transactions
-	  
-	  However:
-	  
-	  SQL databases were designed around transactions from day one.
-	  
-	  NoSQL databases were designed around scale and distribution.
-	  
-	  ---
-	- ## SQL vs NoSQL Decision Framework
+	- ### Modern Reality
+		- A common misconception:
+		  
+		  ```
+		  SQL = Transactions
+		  
+		  NoSQL = No Transactions
+		  ```
+		  
+		  This is outdated.
+		  
+		  Modern MongoDB supports:
+		- ACID Transactions
+		- Multi-document Transactions
+		  
+		  However:
+		  
+		  SQL databases were designed around transactions from day one.
+		  
+		  NoSQL databases were designed around scale and distribution.
+		  
+		  ---
+	- ### SQL vs NoSQL Decision Framework
 		- Ask these questions:
 		- ## Do I Need Strong Transactions?
 		  
@@ -322,7 +319,7 @@ collapsed:: true
 		  ```
 		  
 		  ---
-	- ## Real World Examples
+	- ### Real World Examples
 		- ## Banking Application
 		  
 		  Storage:
@@ -404,138 +401,139 @@ collapsed:: true
 		  ---
 - ### Database Replication
   collapsed:: true
-	- ## Why Replication Exists
-	  
-	  Replication means maintaining multiple copies of the same data across multiple database servers.
-	  
-	  ```
-	             Primary
-	                |
-	        ----------------
-	        |              |
-	        v              v
-	     Replica A     Replica B
-	  ```
-	  
-	  All nodes contain the same data.
-	  
-	  ---
-	- ## Problems Without Replication
-	  
-	  Single Database:
-	  
-	  ```
-	  Application
-	     |
-	     v
-	  Database
-	  ```
-	  
-	  Issues:
-	- Single Point of Failure
-	- Limited Read Capacity
-	- Poor Disaster Recovery
-	  
-	  ---
-	- ## 1. High Availability
-	  
-	  Suppose:
-	  
-	  ```
-	  Primary Database 💥
-	  ```
-	  
-	  fails.
-	  
-	  Without replication:
-	  
-	  ```
-	  Entire Application Down
-	  ```
-	  
-	  With replication:
-	  
-	  ```
-	  Replica
-	   ↓
-	  Promoted to Primary
-	  ```
-	  
-	  Application continues operating.
-	  
-	  ---
-	- ## Key Idea
-	  
-	  Replication improves system availability by providing backup copies of data.
-	  
-	  ---
-	- ## 2. Read Scaling
-	  
-	  Most systems are read-heavy.
-	  
-	  Example:
-	  
-	  ```
-	  Instagram
-	  
-	  95% Reads
-	  5% Writes
-	  ```
-	  
-	  Without replication:
-	  
-	  ```
-	  Reads
-	  |
-	  Primary
-	  ```
-	  
-	  Primary becomes overloaded.
-	  
-	  ---
-	  
-	  With replication:
-	  
-	  ```
-	  Primary
-	                   |
-	         ------------------
-	         |       |        |
-	         v       v        v
-	  
-	      R1       R2       R3
-	  ```
-	  
-	  Reads are distributed across replicas.
-	  
-	  ---
-	  
-	  Benefits:
-	- More throughput
-	- Lower load on primary
-	- Better scalability
-	  
-	  ---
-	- ## 3. Disaster Recovery
-	  
-	  Suppose:
-	  
-	  ```
-	  Primary Database Corrupted
-	  ```
-	  
-	  or
-	  
-	  ```
-	  Datacenter Failure
-	  ```
-	  
-	  Replica still contains data.
-	  
-	  System can recover faster.
-	  
-	  ---
-	- ## Primary-Replica Architecture
+	- ### Why Replication Exists
+	  collapsed:: true
+		- Replication means maintaining multiple copies of the same data across multiple database servers.
+		  
+		  ```
+		             Primary
+		                |
+		        ----------------
+		        |              |
+		        v              v
+		     Replica A     Replica B
+		  ```
+		  
+		  All nodes contain the same data.
+		  
+		  ---
+	- ### Problems Without Replication
+	  collapsed:: true
+		- Single Database:
+		  
+		  ```
+		  Application
+		     |
+		     v
+		  Database
+		  ```
+		  
+		  Issues:
+		- Single Point of Failure
+		- Limited Read Capacity
+		- Poor Disaster Recovery
+		  
+		  ---
+		- ## 1. High Availability
+		  
+		  Suppose:
+		  
+		  ```
+		  Primary Database 💥
+		  ```
+		  
+		  fails.
+		  
+		  Without replication:
+		  
+		  ```
+		  Entire Application Down
+		  ```
+		  
+		  With replication:
+		  
+		  ```
+		  Replica
+		   ↓
+		  Promoted to Primary
+		  ```
+		  
+		  Application continues operating.
+		  
+		  ---
+		- ## Key Idea
+		  
+		  Replication improves system availability by providing backup copies of data.
+		  
+		  ---
+		- ## 2. Read Scaling
+		  
+		  Most systems are read-heavy.
+		  
+		  Example:
+		  
+		  ```
+		  Instagram
+		  
+		  95% Reads
+		  5% Writes
+		  ```
+		  
+		  Without replication:
+		  
+		  ```
+		  Reads
+		  |
+		  Primary
+		  ```
+		  
+		  Primary becomes overloaded.
+		  
+		  ---
+		  
+		  With replication:
+		  
+		  ```
+		  Primary
+		                   |
+		         ------------------
+		         |       |        |
+		         v       v        v
+		  
+		      R1       R2       R3
+		  ```
+		  
+		  Reads are distributed across replicas.
+		  
+		  ---
+		  
+		  Benefits:
+		- More throughput
+		- Lower load on primary
+		- Better scalability
+		  
+		  ---
+		- ## 3. Disaster Recovery
+		  
+		  Suppose:
+		  
+		  ```
+		  Primary Database Corrupted
+		  ```
+		  
+		  or
+		  
+		  ```
+		  Datacenter Failure
+		  ```
+		  
+		  Replica still contains data.
+		  
+		  System can recover faster.
+		  
+		  ---
+	- ### Primary-Replica Architecture
+	  collapsed:: true
 		- Most common replication architecture.
 		- ## Architecture
 		  
@@ -648,7 +646,8 @@ collapsed:: true
 		- Reporting Systems
 		  
 		  ---
-	- ## Replication Logs
+	- ### Replication Logs
+	  collapsed:: true
 		- Replication is usually log-based.
 		  
 		  Primary records every change.
@@ -704,7 +703,8 @@ collapsed:: true
 		  ```
 		  
 		  ---
-	- ## Replication Lag
+	- ### Replication Lag
+	  collapsed:: true
 		- One of the most important concepts in distributed systems.
 		- ## Definition
 		  
@@ -779,7 +779,8 @@ collapsed:: true
 		- Read-Your-Writes exists
 		  
 		  ---
-	- ## Synchronous Replication
+	- ### Synchronous Replication
+	  collapsed:: true
 		- Primary waits for replica acknowledgement before returning success.
 		- ## Flow
 		  
@@ -828,9 +829,10 @@ collapsed:: true
 			- Critical Transactions
 			  
 			  ---
-	- ## Asynchronous Replication
+	- ### Asynchronous Replication
+	  collapsed:: true
 		- Most common replication strategy.
-		- ## Flow
+		- ### Flow
 		  
 		  ```
 		  Write
@@ -843,7 +845,7 @@ collapsed:: true
 		  ```
 		  
 		  ---
-		- ## Benefits
+		- ### Benefits
 			- ### Faster Writes
 			  
 			  User receives response immediately.
@@ -859,7 +861,8 @@ collapsed:: true
 			  Primary is not waiting for replicas.
 			  
 			  ---
-		- ## Drawbacks
+		- ### Drawbacks
+		  collapsed:: true
 			- ### Replication Lag
 			  
 			  Replicas may contain stale data.
@@ -870,14 +873,16 @@ collapsed:: true
 			  Primary may fail before replicas receive latest updates.
 			  
 			  ---
-		- ## Common Use Cases
+		- ### Common Use Cases
+		  collapsed:: true
 			- Social Media
 			- Analytics
 			- User Profiles
 			- Product Catalogs
 			  
 			  ---
-	- ## Failover
+	- ### Failover
+	  collapsed:: true
 		- Failover is the process of replacing a failed primary with a replica.
 		- ## Before Failure
 		  
@@ -961,7 +966,8 @@ collapsed:: true
 				  Multiple database servers required.
 				  
 				  ---
-	- # Interview Cheat Sheet
+	- ### Interview Cheat Sheet
+	  collapsed:: true
 		- ## Why Replication?
 		- High Availability
 		- Read Scaling
@@ -1017,8 +1023,8 @@ collapsed:: true
 		- Failover improves system resilience.
 		- Replication is the foundation for read scaling in modern systems.
 - ### Database Sharding
-  collapsed:: true
-	- ## Why Sharding Exists
+	- ### Why Sharding Exists
+	  collapsed:: true
 		- Replication solves read scaling and high availability.
 		- Sharding is needed when a single primary still becomes the write bottleneck.
 		- As traffic grows:
@@ -1042,7 +1048,8 @@ collapsed:: true
 		- It does this by distributing data across multiple database servers.
 		  
 		  ---
-	- ## What Is Sharding
+	- ### What Is Sharding
+	  collapsed:: true
 		- Sharding is the process of splitting data across multiple database servers.
 		- Each shard stores only a subset of the total data.
 		- Example:
@@ -1071,7 +1078,8 @@ collapsed:: true
 			- Load is distributed
 			  
 			  ---
-	- ## Replication vs Sharding
+	- ### Replication vs Sharding
+	  collapsed:: true
 		- Replication means same data, multiple copies.
 		- Sharding means different data, different databases.
 		- Replication is mainly for:
@@ -1083,7 +1091,8 @@ collapsed:: true
 			- Storage scaling
 			  
 			  ---
-	- ## Primary Goal Of Sharding
+	- ### Primary Goal Of Sharding
+	  collapsed:: true
 		- Sharding exists because eventually one database cannot handle all writes.
 		- Example:
 		  
@@ -1093,7 +1102,8 @@ collapsed:: true
 		- Instead of upgrading a single server forever, we distribute the workload across multiple databases.
 		  
 		  ---
-	- ## Shard Key
+	- ### Shard Key
+	  collapsed:: true
 		- The shard key is the field used to decide which shard stores a record.
 		- Without a shard key, the system cannot decide where data should go.
 		- Example shard keys:
@@ -1118,7 +1128,8 @@ collapsed:: true
 		  User 10 goes to Shard 1, user 11 goes to Shard 2, and user 12 goes to Shard 3.
 		  
 		  ---
-	- ## Characteristics Of A Good Shard Key
+	- ### Characteristics Of A Good Shard Key
+	  collapsed:: true
 		- ### 1. High Cardinality
 			- Cardinality means the number of unique values.
 			- Good shard keys:
@@ -1152,7 +1163,8 @@ collapsed:: true
 			- If most requests are for all clusters of a specific organization, then organizationId is a good shard key.
 			  
 			  ---
-	- ## Sharding Strategies
+	- ### Sharding Strategies
+	  collapsed:: true
 		- ### Range-Based Sharding
 			- Data is divided by ranges.
 			- Example:
@@ -1197,7 +1209,8 @@ collapsed:: true
 				- Range queries become difficult
 				  
 				  ---
-	- ## Shard Router
+	- ### Shard Router
+	  collapsed:: true
 		- Applications usually do not manually determine shards.
 		- A router handles it.
 		- Responsibilities:
@@ -1218,7 +1231,8 @@ collapsed:: true
 			  ```
 			  
 			  ---
-	- ## Hot Shards
+	- ### Hot Shards
+	  collapsed:: true
 		- A hot shard receives significantly more traffic than the others.
 		- Example:
 		  
@@ -1237,7 +1251,8 @@ collapsed:: true
 			- Even if most shards are healthy, one overloaded shard can become the bottleneck for the entire system.
 			  
 			  ---
-	- ## Cross-Shard Queries
+	- ### Cross-Shard Queries
+	  collapsed:: true
 		- Before sharding, queries are simple because everything is in one database.
 		- After sharding, the system must know which shard contains the data.
 		- If it does not know, it must query multiple shards and merge results.
@@ -1251,7 +1266,8 @@ collapsed:: true
 		  ```
 		  
 		  ---
-	- ## Cross-Shard Joins
+	- ### Cross-Shard Joins
+	  collapsed:: true
 		- Example:
 		  
 		  ```
@@ -1263,7 +1279,8 @@ collapsed:: true
 		- This is much more complex than a single-database join.
 		  
 		  ---
-	- ## Rebalancing
+	- ### Rebalancing
+	  collapsed:: true
 		- Rebalancing is the process of moving data when the number of shards changes.
 		- Example:
 		  
@@ -1284,7 +1301,8 @@ collapsed:: true
 			- Temporary system instability
 			  
 			  ---
-	- ## Real World Example
+	- ### Real World Example
+	  collapsed:: true
 		- Imagine a Kubernetes provisioning platform growing to 50 million clusters.
 		- A single database can no longer handle all writes.
 		- You choose organizationId as the shard key.
@@ -1295,7 +1313,8 @@ collapsed:: true
 			- Faster organization-level queries
 			  
 			  ---
-	- ## Tradeoffs
+	- ### Tradeoffs
+	  collapsed:: true
 		- ### Advantages
 			- Write scaling
 			- Storage scaling
@@ -1311,7 +1330,8 @@ collapsed:: true
 			- Shard key selection becomes critical
 			  
 			  ---
-	- ## Interview Cheat Sheet
+	- ### Interview Cheat Sheet
+	  collapsed:: true
 		- ### Replication Solves
 			- Read scaling
 			- High availability
@@ -1335,7 +1355,8 @@ collapsed:: true
 			- Rebalancing
 			  
 			  ---
-	- ## Key Takeaways
+	- ### Key Takeaways
+	  collapsed:: true
 		- Sharding distributes data across multiple databases.
 		- It primarily solves write scaling and storage scaling.
 		- The shard key determines where data is stored.
@@ -1344,8 +1365,8 @@ collapsed:: true
 		- Sharding improves scalability but significantly increases system complexity.
 		- Replication and sharding solve different problems and are commonly used together in large-scale systems.
 - ### Database Partitioning
-  collapsed:: true
-	- ## Why Partitioning Exists
+	- ### Why Partitioning Exists
+	  collapsed:: true
 		- As data grows, a single table can become extremely large.
 		- Example:
 		  
@@ -1363,7 +1384,8 @@ collapsed:: true
 		- Partitioning solves these problems by dividing a large table into smaller pieces while still appearing as a single table to applications.
 		  
 		  ---
-	- ## What Is Partitioning
+	- ### What Is Partitioning
+	  collapsed:: true
 		- Partitioning is the process of splitting a large table into smaller logical parts called partitions.
 		- Example:
 		  
@@ -1384,7 +1406,8 @@ collapsed:: true
 		- Applications still query the same table name, but internally the database accesses only relevant partitions.
 		  
 		  ---
-	- ## Benefits Of Partitioning
+	- ### Benefits Of Partitioning
+	  collapsed:: true
 		- ### Faster Queries
 			- Instead of scanning 1 billion rows, the database may scan only the relevant partition.
 		- ### Easier Maintenance
@@ -1393,7 +1416,8 @@ collapsed:: true
 			- Large datasets become easier to organize.
 			  
 			  ---
-	- ## Partition Key
+	- ### Partition Key
+	  collapsed:: true
 		- A partition key determines which partition stores a row.
 		- Common examples:
 			- created_at
@@ -1403,7 +1427,8 @@ collapsed:: true
 		- Choosing the right partition key is critical.
 		  
 		  ---
-	- ## Characteristics Of A Good Partition Key
+	- ### Characteristics Of A Good Partition Key
+	  collapsed:: true
 		- ### 1. Matches Query Patterns
 			- Example query pattern:
 			  
@@ -1418,7 +1443,8 @@ collapsed:: true
 			- The database can skip irrelevant partitions when the partition key appears in queries.
 			  
 			  ---
-	- ## Partitioning Strategies
+	- ### Partitioning Strategies
+	  collapsed:: true
 		- ### Horizontal Partitioning
 			- Most common form of partitioning.
 			- Rows are split across partitions.
@@ -1531,7 +1557,8 @@ collapsed:: true
 				- Uneven distribution can occur
 				  
 				  ---
-	- ## Partition Pruning
+	- ### Partition Pruning
+	  collapsed:: true
 		- Partition pruning is one of the biggest benefits of partitioning.
 		- The database skips irrelevant partitions.
 		- Without partitioning:
@@ -1554,7 +1581,8 @@ collapsed:: true
 		  Database only scans Orders_2025.
 		  
 		  ---
-	- ## PostgreSQL Example
+	- ### PostgreSQL Example
+	  collapsed:: true
 		- Create a partitioned table:
 		  
 		  ```sql
@@ -1593,7 +1621,8 @@ collapsed:: true
 		- The optimizer reads only orders_2024.
 		  
 		  ---
-	- ## Other Partition Types
+	- ### Other Partition Types
+	  collapsed:: true
 		- ### Range Partitioning
 			- `PARTITION BY RANGE (order_date)`
 			- Best for time-based or ordered data.
@@ -1624,7 +1653,8 @@ collapsed:: true
 			- Useful when data is not naturally divided by date or category.
 			  
 			  ---
-	- ## Partitioning Vs Sharding
+	- ### Partitioning Vs Sharding
+	  collapsed:: true
 		- This is a very common interview question.
 		- | Aspect | Partitioning | Sharding |
 		  |---|---|---|
@@ -1636,7 +1666,8 @@ collapsed:: true
 		- Technically, sharding is a specialized form of partitioning where partitions are distributed across multiple servers.
 		  
 		  ---
-	- ## Real World Examples
+	- ### Real World Examples
+	  collapsed:: true
 		- ### E-Commerce Orders
 			- Partition by created_at, usually by year.
 			- Example:
@@ -1664,7 +1695,8 @@ collapsed:: true
 			- Partition by transaction date for efficient historical queries.
 			  
 			  ---
-	- ## Tradeoffs
+	- ### Tradeoffs
+	  collapsed:: true
 		- ### Advantages
 			- Faster queries
 			- Partition pruning
@@ -1678,7 +1710,8 @@ collapsed:: true
 			- Repartitioning can be difficult
 			  
 			  ---
-	- ## Interview Cheat Sheet
+	- ### Interview Cheat Sheet
+	  collapsed:: true
 		- ### Why Partitioning?
 			- Large tables become difficult to manage
 			- Improves query performance
@@ -1693,7 +1726,8 @@ collapsed:: true
 			- Database scans only relevant partitions instead of the entire dataset.
 			  
 			  ---
-	- ## Key Takeaways
+	- ### Key Takeaways
+	  collapsed:: true
 		- Partitioning splits a large table into smaller logical pieces.
 		- It primarily improves performance and manageability.
 		- Choosing the correct partition key is critical.
@@ -1702,15 +1736,8 @@ collapsed:: true
 		- Sharding is a distributed form of partitioning.
 		- Partitioning solves performance problems, while sharding solves scalability problems.
 		- Partitioning and sharding are often used together in large-scale systems.
-	- 1. Replication (VERY IMPORTANT)
-	  2. Read Replicas
-	  3. Primary-Replica Architecture
-	  4. Sharding
-	  5. Partitioning
-	  6. Indexing
 - ### Indexing
-  collapsed:: true
-	- ## Introduction to Indexing
+	- ### Introduction to Indexing
 	  collapsed:: true
 		- ## 1. Why Indexing Exists
 			- As database tables grow larger, searching for data becomes slower.
@@ -1846,7 +1873,9 @@ collapsed:: true
 			      ▼
 			  Return Result
 			  ```
-	- ## Tradeoffs & Best Practices
+	- ### Tradeoffs & Best Practices
+	  id:: 6a5ceaa9-9883-4923-9924-f928d0080224
+	  collapsed:: true
 		- ## 1. Read vs Write Tradeoff
 			- Indexes significantly improve **read performance** by allowing the database to quickly locate rows.
 			  
@@ -1965,6 +1994,843 @@ collapsed:: true
 				- ### The table experiences heavy write traffic
 				  
 				  If a table receives frequent inserts or updates but very few reads, excessive indexing can reduce overall performance.
+	- ### B+ Tree & Index Internals
+	  collapsed:: true
+		- ### 1. Database Pages & Index Storage
+		  collapsed:: true
+			- ### What is a Page?
+			  collapsed:: true
+				- A page is a fixed-size block of storage that a database uses as the basic unit for reading and writing data.
+				- Instead of reading one row at a time from disk, the database reads a page containing multiple rows or index entries.
+				- Disk / SSD
+				- ```
+				      ↓
+				  Database reads a Page
+				      ↓
+				  Page contains multiple rows / index entries
+				  ```
+				- Conceptually:
+				- Page
+				- ```
+				  ┌─────────────────────────────┐
+				  │ Row 1                      │
+				  │ Row 2                      │
+				  │ Row 3                      │
+				  │ Row 4                      │
+				  │ ...                        │
+				  └─────────────────────────────┘
+				  ```
+				- A page is also the unit commonly cached in memory inside the database's buffer pool/cache.
+				- Database performance often depends heavily on how many pages need to be accessed.
+			- ### Table Pages vs Index Pages
+			  collapsed:: true
+				- ### Table Pages
+					- Table pages contain the actual table data.
+					- Table Page
+					- ```
+					  ┌──────────────────────────────┐
+					  │ id: 1 | name: Aditya         │
+					  │ id: 2 | name: Amit           │
+					  │ id: 3 | name: Rahul          │
+					  └──────────────────────────────┘
+					  ```
+				- ### Index Pages
+					- Index pages contain indexed values and information that helps locate the actual row.
+					- Conceptually:
+					- Index Page
+					- ```
+					  email                  → Row Reference
+					  amit@gmail.com         → Row X
+					  rahul@gmail.com        → Row Y
+					  ```
+					- The database can:
+					- Search Index Page
+					- ```
+					          ↓
+					  Find Indexed Value
+					          ↓
+					  Get Row Reference
+					          ↓
+					  Locate Actual Table Row
+					  ```
+			- ### Row Pointers / References
+			  collapsed:: true
+				- An index usually does not need to store the complete row.
+				- Instead, it stores something that tells the database where the actual row can be found.
+				- Conceptually:
+				- amit@gmail.com
+				- ```
+				         ↓
+				  Row Reference
+				         ↓
+				  Actual User Row
+				  ```
+				- For example:
+				- Index
+				- email = amit@gmail.com
+				- ```
+				              ↓
+				         Row Reference
+				              ↓
+				         Table Page
+				              ↓
+				         Actual Row
+				  ```
+				- The exact implementation depends on the database and storage engine.
+				- It may be:
+				- A physical row location
+				- A row identifier
+				- A primary key value
+				- Another internal record reference
+				- For understanding indexes, think of it as:
+				- "The data you are looking for is over here."
+			- ### Why Page Access Matters
+			  collapsed:: true
+				- Accessing data within a page already loaded into memory is relatively cheap.
+				- Accessing a page that is not in memory may require loading it from storage.
+				- Conceptually:
+				- Best case:
+				- Page already in memory
+				- ```
+				          ↓
+				  Fast access
+				  More expensive case:
+				  ```
+				- Page not in memory
+				- ```
+				          ↓
+				  Storage access
+				          ↓
+				  Load Page into memory
+				          ↓
+				  Process data
+				  ```
+				- Therefore, the major goal of a database index is often:
+				- Find the required data using as few page accesses as possible.
+				- This is the central reason behind B+ Trees.
+		- ### 2. Why Tree-Based Indexes Exist
+		  collapsed:: true
+			- ### Single-Level Index
+			  collapsed:: true
+				- A simple index can conceptually look like this:
+				- Index
+				- ```
+				  10  → Page A
+				  20  → Page B
+				  30  → Page C
+				  40  → Page D
+				  50  → Page E
+				  ```
+				- For a small dataset, this is manageable.
+				- But as the table grows:
+				- More Data
+				- ```
+				      ↓
+				  More Index Entries
+				      ↓
+				  Index becomes large
+				  ```
+				- Eventually, the entire index cannot fit inside one page.
+			- ### Index Becomes Large
+			  collapsed:: true
+				- Suppose the index itself spans multiple pages:
+				- ```
+				  Index Page 1 → Keys 1–1000
+				  Index Page 2 → Keys 1001–2000
+				  Index Page 3 → Keys 2001–3000
+				  ...
+				  ```
+				- Now suppose we search for:
+				- 2500
+				- The database now has a new problem:
+				- Which index page contains 2500?
+				- Searching through index pages one by one would again become inefficient.
+			- ### Multilevel Indexing
+			  collapsed:: true
+				- The solution is to create another level that helps locate the correct index page.
+				- ```
+				                Top-Level Index
+				                       ↓
+				          ┌────────────┼────────────┐
+				          ↓            ↓            ↓
+				     Index Page 1  Index Page 2  Index Page 3
+				          ↓            ↓            ↓
+				       Data Pages    Data Pages    Data Pages
+				  ```
+				- Example:
+				- Top-Level Index
+				- ```
+				  1000 → Index Page 1
+				  2000 → Index Page 2
+				  3000 → Index Page 3
+				  ```
+				- Searching for 2500:
+				- Top-Level Index
+				- ```
+				          ↓
+				  2500 belongs between 2000 and 3000
+				          ↓
+				  Correct Index Page
+				          ↓
+				  Correct Data Page
+				          ↓
+				  Actual Row
+				  ```
+				- This is multilevel indexing.
+			- ### Need for Fast Page Navigation
+			  collapsed:: true
+				- As data grows:
+				- Data grows
+				- ```
+				      ↓
+				  Index grows
+				      ↓
+				  Need multiple index levels
+				      ↓
+				  Need efficient navigation between pages
+				  ```
+				- A tree structure naturally solves this:
+				- Root Page
+				- ```
+				      ↓
+				  Internal Index Page
+				      ↓
+				  Internal Index Page
+				      ↓
+				  Leaf Page
+				  ```
+				- The goal is:
+				- Use each page to eliminate a large portion of the search space.
+				- This leads us to tree-based structures.
+		- ### 3. Evolution: BST → M-Way Tree → B-Tree
+		  collapsed:: true
+			- ### Why Not BST?
+			  collapsed:: true
+				- A Binary Search Tree has at most two children per node.
+				- ```
+				          50
+				         /  \
+				       30    70
+				      / \    / \
+				     20 40  60 80
+				  ```
+				- For in-memory algorithms, BSTs can be useful.
+				- But databases work with pages containing many entries, not individual memory objects.
+			- ### Low Fan-out and Tree Height
+			  collapsed:: true
+				- A BST has:
+				- Maximum Children = 2
+				- A database page can contain many keys and pointers.
+				- A B+ Tree node can conceptually have:
+				- [10 | 20 | 30 | 40 | 50 | 60]
+				- P1   P2   P3   P4   P5   P6   P7
+				- This gives:
+			- ### High Fan-out
+			  collapsed:: true
+				- Fan-out means:
+				- The number of children a node can have.
+				- Comparison:
+				- BST
+				- Fan-out = 2
+				- ```
+				          ↓
+				  More levels required
+				          ↓
+				  Potentially more page accesses
+				  B+ Tree
+				  ```
+				- High Fan-out
+				- ```
+				          ↓
+				  Fewer levels
+				          ↓
+				  Fewer page accesses
+				  ```
+			- ### Why BST Is Not Ideal for Database Pages
+			  collapsed:: true
+				- A BST conceptually stores:
+				- One Key
+				- ```
+				  +
+				  Two Child Pointers
+				  ```
+				- per node.
+				- This does not efficiently use a database page.
+				- A B+ Tree uses a page as one tree node containing:
+				- Many Keys
+				- ```
+				  +
+				  Many Child Pointers
+				  ```
+				- Conceptually:
+				- One Page
+				- ```
+				  ┌─────────────────────────────────┐
+				  │ 10 │ 20 │ 30 │ 40 │ 50 │ 60     │
+				  │ ↓    ↓    ↓    ↓    ↓    ↓       │
+				  │ Child Pointers                  │
+				  └─────────────────────────────────┘
+				  ```
+				- This drastically reduces tree height.
+			- ### M-Way Search Tree
+			  collapsed:: true
+				- An M-way search tree allows a node to contain multiple keys and multiple children.
+				- Example:
+				- ```
+				               [20 | 50 | 80]
+				              /    |    |    \
+				             ↓     ↓    ↓     ↓
+				  ```
+				- <20   20-50 50-80  >80
+				- Each key helps divide the search space.
+			- ### High Fan-out
+			  collapsed:: true
+				- Suppose a node contains:
+				- [20 | 50 | 80]
+				- It can have four children:
+				- Child 1 → values < 20
+				- Child 2 → values between 20 and 50
+				- Child 3 → values between 50 and 80
+				- Child 4 → values > 80
+				- More keys per page:
+				- More Keys
+				- ```
+				      ↓
+				  More Children
+				      ↓
+				  Higher Fan-out
+				      ↓
+				  Smaller Tree Height
+				  ```
+			- ### Why Comparisons Inside a Page Are Cheap
+			  collapsed:: true
+				- You might think:
+				- "If a page contains many keys, don't we need more comparisons?"
+				- Yes.
+				- But comparisons are generally much cheaper than loading another page.
+				- Once a page is already in memory:
+				- Read Page
+				- ```
+				      ↓
+				  Compare keys inside memory
+				      ↓
+				  Choose correct child
+				  ```
+				- The important optimization is:
+				- Do more cheap comparisons inside one page to avoid an expensive additional page access.
+				- Therefore:
+				- CPU Comparisons
+				- ```
+				          ↓
+				  Usually relatively cheap
+				  ```
+				- Page / Storage Access
+				- ```
+				          ↓
+				  More expensive
+				  ```
+				- This is why databases prefer high fan-out trees.
+			- ### Why M-Way Tree Is Still Not Enough
+			  collapsed:: true
+				- A normal M-way search tree can still become unbalanced.
+				- For example:
+				- ```
+				          Root
+				         /    \
+				        ↓      ↓
+				      Short   Very Deep
+				  ```
+				- Then some searches require:
+				- 2 page accesses
+				- while others require:
+				- 10 page accesses
+				- This creates unpredictable performance.
+				- We need:
+				- High Fan-out
+				- ```
+				          +
+				  Guaranteed Balance
+				  ```
+				- This leads to the B-Tree.
+			- ### B-Tree and Automatic Balancing
+			  collapsed:: true
+				- A B-Tree is essentially a:
+				- Balanced M-way search tree.
+				- Important properties:
+				- Nodes contain multiple keys.
+				- Nodes have multiple children.
+				- Keys are sorted.
+				- The tree remains balanced.
+				- All leaves remain at the same depth.
+				- Nodes split when they become too full.
+				- Nodes borrow or merge when they become too empty.
+				- Core balancing logic:
+				- Node becomes full
+				- ```
+				          ↓
+				  Split
+				          ↓
+				  Separator moves upward
+				  Node becomes too empty
+				          ↓
+				  Borrow from sibling
+				          OR
+				  Merge with sibling
+				  ```
+				- This ensures predictable tree height.
+		- ### 4. B+ Tree Structure
+		  collapsed:: true
+			- ### Why B+ Tree?
+			  collapsed:: true
+				- B+ Tree is an evolution of the B-Tree optimized for database indexing.
+				- Its major idea is:
+				- Internal Nodes
+				- ```
+				        ↓
+				  Navigation
+				  ```
+				- Leaf Nodes
+				- ```
+				        ↓
+				  Actual Indexed Entries
+				  +
+				  Row/Data References
+				  ```
+			- ### Root Node
+			  collapsed:: true
+				- The root is the starting point of every search.
+				- Example:
+				- ```
+				                   [30 | 70]
+				                  /    |    \
+				  ```
+				- The keys determine which child page should be visited.
+				- For example:
+				- Search for 45
+				- 30 < 45 < 70
+				- ```
+				          ↓
+				  Go to middle child
+				  ```
+			- ### Internal Nodes
+			  collapsed:: true
+				- Internal nodes primarily help navigate the tree.
+				- Example:
+				- [30 | 70 | 100]
+				- These keys divide the search space.
+				- Internal nodes conceptually contain:
+				- Routing Keys
+				- ```
+				  +
+				  Child Page Pointers
+				  ```
+				- Their purpose is:
+				- Tell the database which page to read next.
+			- ### Leaf Nodes
+			  collapsed:: true
+				- Leaf nodes contain the actual indexed entries.
+				- Conceptually:
+				- Leaf Page
+				- ```
+				  10 → Row Reference
+				  20 → Row Reference
+				  30 → Row Reference
+				  ```
+				- Every search for an indexed entry ultimately reaches a leaf.
+			- ### Row/Data References
+			  collapsed:: true
+				- Once the correct key is found:
+				- B+ Tree Leaf
+				- email = amit@gmail.com
+				- ```
+				          ↓
+				  Row Reference
+				          ↓
+				  Actual Row
+				  ```
+				- The exact meaning of the reference depends on the database.
+			- ### Linked Leaf Nodes
+			  collapsed:: true
+				- Leaf nodes are linked together in sorted order.
+				- ```
+				  [10 | 20 | 30]
+				          ↔
+				  [40 | 50 | 60]
+				          ↔
+				  [70 | 80 | 90]
+				  ```
+				- This is extremely important for range queries.
+			- ### Why High Fan-out Matters
+			  collapsed:: true
+				- Because internal nodes contain many keys and child pointers:
+				- One Page
+				- ```
+				      ↓
+				  Many Routing Keys
+				      ↓
+				  Many Children
+				      ↓
+				  High Fan-out
+				      ↓
+				  Short Tree
+				      ↓
+				  Fewer Page Accesses
+				  ```
+				- This is one of the biggest reasons B+ Trees are effective for databases.
+		- ### 5. B+ Tree Operations
+		  collapsed:: true
+			- ### Search
+			  collapsed:: true
+				- A B+ Tree search follows:
+				- Root
+				- ```
+				   ↓
+				  Internal Node
+				   ↓
+				  Internal Node
+				   ↓
+				  Leaf Node
+				   ↓
+				  Indexed Entry
+				  ```
+				- At every internal node:
+				- Compare Search Key
+				- ```
+				          ↓
+				  Determine Range
+				          ↓
+				  Follow Correct Child Pointer
+				  ```
+			- ### Point Lookup
+			  collapsed:: true
+				- Example:
+				- WHERE email = 'amit@gmail.com'
+				- The B+ Tree navigates directly toward the leaf containing that key.
+				- Conceptually:
+				- Root
+				- ```
+				   ↓
+				  Correct Range
+				   ↓
+				  Correct Internal Page
+				   ↓
+				  Leaf Page
+				   ↓
+				  Find Exact Key
+				   ↓
+				  Row Reference
+				  ```
+			- ### Range Query
+			  collapsed:: true
+				- Example:
+				- WHERE price BETWEEN 100 AND 500
+				- Process:
+				- Use Tree
+				- ```
+				      ↓
+				  Find Leaf containing 100
+				      ↓
+				  Start scanning entries
+				      ↓
+				  Follow Linked Leaf Pages
+				      ↓
+				  Stop after 500
+				  ```
+				- Conceptually:
+				- ```
+				  [100 | 150 | 200]
+				            ↔
+				  [250 | 300 | 350]
+				            ↔
+				  [400 | 450 | 500]
+				  ```
+				- This is why B+ Trees are excellent for range queries.
+			- ### Insert
+			  collapsed:: true
+				- Process:
+				- Find Correct Leaf
+				- ```
+				          ↓
+				  Insert Key in Sorted Order
+				  ```
+				- If there is space:
+				- Done
+				- If the page is full:
+				- Leaf Page Full
+				- ```
+				          ↓
+				  Split Page
+				          ↓
+				  Create Two Pages
+				          ↓
+				  Update Leaf Links
+				          ↓
+				  Send Separator Key to Parent
+				  ```
+			- ### Page Split
+			  collapsed:: true
+				- Example:
+				- Before
+				- [10 | 20 | 30 | 40]
+				- After splitting:
+				- [10 | 20] ↔ [30 | 40]
+				- A separator key is added to the parent so it can navigate to the new page.
+			- ### Split Propagation
+			  collapsed:: true
+				- Sometimes adding a separator makes the parent full.
+				- Leaf Split
+				- ```
+				      ↓
+				  Parent Updated
+				      ↓
+				  Parent Full
+				      ↓
+				  Parent Split
+				      ↓
+				  Separator Moves Up
+				  ```
+				- This can continue toward the root.
+			- ### Root Split
+			  collapsed:: true
+				- If the root becomes full:
+				- Root Splits
+				- ```
+				          ↓
+				  New Root Created
+				          ↓
+				  Tree Height Increases
+				  ```
+				- The tree grows upward while maintaining balance.
+			- ### Delete
+			  collapsed:: true
+				- Process:
+				- Find Correct Leaf
+				- ```
+				          ↓
+				  Delete Entry
+				  ```
+				- If the page still has enough entries:
+				- Done
+				- If it becomes too empty:
+				- Rebalancing Required
+			- ### Borrow / Merge
+			- ### Borrow
+			  collapsed:: true
+				- The database may borrow an entry from a sibling.
+				- Sibling
+				- ```
+				     ↓
+				  Move Entry
+				     ↓
+				  Rebalance
+				  ```
+			- ### Merge
+			  collapsed:: true
+				- If borrowing is not possible:
+				- Two Underfilled Pages
+				- ```
+				          ↓
+				  Merge
+				          ↓
+				  Update Parent
+				  ```
+				- Core concept:
+				- ```
+				  Insert
+				    ↓
+				  Split if Full
+				  
+				  Delete
+				    ↓
+				  Borrow or Merge if Too Empty
+				  ```
+		- ### 6. Comparisons & Design Decisions
+		  collapsed:: true
+			- ### B-Tree vs B+ Tree
+			  collapsed:: true
+				- | Feature | B-Tree | B+ Tree |
+				  | --- | --- | --- |
+				  | Internal nodes | May contain data references | Primarily routing information |
+				  | Leaf nodes | May contain entries/data | Contains actual indexed entries |
+				  | Search | May finish before leaf | Reaches leaf |
+				  | Internal node size | Usually larger | Usually more compact |
+				  | Fan-out | Usually lower | Usually higher |
+				  | Range queries | Good | Excellent |
+				  | Sequential scan | Less convenient | Excellent |
+				  | Linked leaves | Not inherent in the classic model | Key feature |
+			- ### Why B+ Tree is preferred
+			  collapsed:: true
+				- ```
+				  Smaller Internal Entries
+				          ↓
+				  More Keys per Page
+				          ↓
+				  Higher Fan-out
+				          ↓
+				  Shorter Tree
+				  ```
+				- And:
+				- ```
+				  Sorted Linked Leaves
+				          ↓
+				  Efficient Range Queries
+				  ```
+			- ### B+ Tree vs BST
+			  collapsed:: true
+				- ### BST
+				  collapsed:: true
+					- ```
+					  Maximum Children = 2
+					          ↓
+					  Low Fan-out
+					          ↓
+					  More Tree Levels
+					          ↓
+					  More Page Traversals
+					  ```
+					- A BST also does not naturally use database pages efficiently.
+				- ### B+ Tree
+				  collapsed:: true
+					- ```
+					  Many Keys per Page
+					          ↓
+					  Many Children
+					          ↓
+					  High Fan-out
+					          ↓
+					  Small Tree Height
+					          ↓
+					  Fewer Page Accesses
+					  ```
+				- Key Difference
+				  collapsed:: true
+					- BSTs optimize navigation through individual nodes, while B+ Trees are designed to efficiently use pages containing many keys.
+			- ### B+ Tree vs Hash Index
+			  collapsed:: true
+				- ### Hash Index
+				  collapsed:: true
+					- ```
+					  Value
+					    ↓
+					  Hash Function
+					    ↓
+					  Bucket
+					    ↓
+					  Entry
+					  ```
+					- Example:
+					- ```
+					  hash(user_id = 123)
+					          ↓
+					  Bucket 42
+					  ```
+					- Excellent for:
+					- `WHERE user_id = 123`
+				- ### The Problem with Hashing
+				  collapsed:: true
+					- Hashing does not preserve order.
+					- Example:
+					- ```
+					  10 → Bucket 7
+					  20 → Bucket 2
+					  30 → Bucket 9
+					  40 → Bucket 1
+					  ```
+					- Even though:
+					- `10 < 20 < 30 < 40`
+					- the bucket locations are unrelated.
+					- Therefore:
+					- `WHERE age BETWEEN 20 AND 40`
+					- cannot efficiently follow:
+					- `20 → 30 → 40`
+					- because they may be in unrelated buckets.
+				- ### B+ Tree
+				  collapsed:: true
+					- Values remain ordered:
+					- ```
+					  [10 | 20 | 30]
+					          ↔
+					  [40 | 50 | 60]
+					  ```
+					- Therefore it supports:
+					- Equality Lookup     ✓
+					- Range Queries       ✓
+					- Ordered Scans       ✓
+					- Sorting             ✓
+					- Sequential Access   ✓
+			- ### Equality vs Range Queries
+			  collapsed:: true
+				- ### Exact Equality
+				  collapsed:: true
+					- `WHERE user_id = 123`
+					- Hash indexes can be excellent.
+					- B+ Trees are also efficient.
+				- ### Range
+				  collapsed:: true
+					- `WHERE price BETWEEN 100 AND 500`
+					- B+ Trees are much more suitable because they preserve order.
+			- ### Important Principle
+			  collapsed:: true
+				- Do not say:
+				- B+ Tree is always faster than Hash Index.
+				- Instead:
+				- Hash indexes are specialized for exact equality lookups, while B+ Trees are more versatile because they preserve order and efficiently support both point lookups and range queries.
+		- ### Key Interview Takeaways
+		  collapsed:: true
+			- **1.**
+			- A database page is the basic unit used for storing, reading, and caching database data and index entries.
+			- **2.**
+			- Database indexes aim to reduce the number of pages that must be accessed to locate data.
+			- **3.**
+			- ```
+			  Low Fan-out
+			      ↓
+			  Tall Tree
+			      ↓
+			  More Page Accesses
+			  High Fan-out
+			      ↓
+			  Short Tree
+			      ↓
+			  Fewer Page Accesses
+			  ```
+			- **4.**
+			- An M-way tree allows many keys and children per node, making it better suited to page-based storage than a binary search tree.
+			- **5.**
+			- A B-Tree adds automatic balancing to an M-way search tree.
+			- **6.**
+			- A B+ Tree separates navigation and indexed entries: internal nodes guide the search, while leaf nodes contain indexed entries and references to the actual data.
+			- **7.**
+			- Linked leaf nodes make B+ Trees highly efficient for range queries and sequential scans.
+			- **8.**
+			- B+ Trees are widely used for database indexing because they combine high fan-out, balanced height, efficient page access, equality lookups, and range query support.
+		- ### Final Mental Model
+		  collapsed:: true
+			- Database stores data in Pages
+			- ```
+			              ↓
+			  Need to locate data efficiently
+			              ↓
+			  Create Index
+			              ↓
+			  Index becomes too large
+			              ↓
+			  Multilevel Indexing
+			              ↓
+			  Need efficient page navigation
+			              ↓
+			  BST has low fan-out
+			              ↓
+			  M-Way Tree provides high fan-out
+			              ↓
+			  Need automatic balancing
+			              ↓
+			  B-Tree
+			              ↓
+			  Optimize for database indexing + range scans
+			              ↓
+			  B+ Tree
+			  ```
 -
 - Indexing
   │
@@ -2014,6 +2880,13 @@ collapsed:: true
   ├── 7. Common Interview Questions
   │
   └── 8. Key Takeaways
+	- ├── 3. B+ Tree (Index Internals)
+	  │     ├── Why B+ Trees?
+	  │     ├── Structure
+	  │     ├── Search
+	  │     ├── Insert
+	  │     ├── Delete
+	  │     └── Why Not BST / Hash Table?
 - ## 1. Indexing ⭐⭐⭐⭐⭐ 
   
   This is one of the most important topics.

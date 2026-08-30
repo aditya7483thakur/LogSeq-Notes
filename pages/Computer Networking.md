@@ -131,7 +131,6 @@
 		- 7. **Physical:** Transmit bits over Wi-Fi, fiber, or copper
 		- **Receiver reverses steps** to reconstruct the original message.
 - ### HTTP Versions
-  collapsed:: true
 	- ### At a glance
 	  
 	  | Version | Core idea | Transport |
@@ -587,7 +586,6 @@
 	  | RTP/RTCP (Real-time Transport Protocol) | UDP | varies |
 	  | QUIC (used by HTTP/3, Google) | UDP | varies |
 - ### TCP (Transmission Control Protocol)
-  collapsed:: true
 	- What is TCP?
 		- TCP (Transmission Control Protocol) is a **transport layer protocol** providing:
 		- Reliability
@@ -1624,7 +1622,6 @@
 		- 5. In TLS(≤1.2) session key is derived by ( random_secret , client_random_number ,server_random_number )
 		- 6. This session key is then used to encrypt data and decrypt data
 - ### Protocols (pending and important → HTTP, HTTPS, FTP,SMTP, etc.)
-  collapsed:: true
 - ### HTTP Status Codes
   collapsed:: true
 	- 1. 1xx (Informational):
