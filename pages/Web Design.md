@@ -87,6 +87,22 @@
 		- Short headlines. One idea. Subtext is one sentence.
 		- Left-align long text. Center only short hero / CTA lines.
 	- ### How to pick color
+		- Principle: **visual hierarchy**. Don't pick attractive colors. Assign each color a **job**.
+		- Color is not decoration. **Color controls attention.**
+		- Example jobs
+		  ```
+		  Black       → background / space
+		  White       → information
+		  Gray        → lower-priority information
+		  Neon green  → attention
+		  ```
+		- Don't make all primary text neon. Neon isn't "wrong" — you're spending your strongest signal everywhere, so nothing is first.
+		- Ask: **what should the eye notice first, second, third?** Then work backwards.
+		  ```
+		  Notice first?     → strongest contrast / size / color
+		  Notice second?    → slightly weaker
+		  Supporting info?  → reduce contrast / size
+		  ```
 		- Don't start from a rainbow. Order: **neutrals → brand → CTA**.
 		- **60 / 30 / 10**
 			- 60% bg / surfaces (white, off-white, near-black)
