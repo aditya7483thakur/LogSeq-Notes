@@ -10,3 +10,4 @@
 - [[Architectural Patterns]]
 - [[Node Js]]
 - [[Web Design]]
+- [[AI Engineering]]

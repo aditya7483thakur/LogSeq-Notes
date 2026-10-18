@@ -131,6 +131,7 @@
 		- 7. **Physical:** Transmit bits over Wi-Fi, fiber, or copper
 		- **Receiver reverses steps** to reconstruct the original message.
 - ### HTTP Versions
+  collapsed:: true
 	- ### At a glance
 	  
 	  | Version | Core idea | Transport |
