@@ -552,6 +552,7 @@ collapsed:: true
 				    dnsNames:
 				      - notes.example.com
 				  ```
+			- **See also:** how certificates, CAs and the TLS handshake work → [[Computer Networking]] ((e4939b22-af2e-47b2-8f69-0b7fa68ea958))
 		- ### Quick comparison
 			- | Example | CR Kind | Operator goal |
 			  | --- | --- | --- |

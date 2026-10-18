@@ -156,3 +156,5 @@ collapsed:: true
 	- # 🔹 One-line Summary (Interview)
 	  
 	  Repository Pattern separates database logic into a dedicated layer, keeping services focused on business logic and controllers focused on HTTP handling.
+	-
+	- **Strategy Pattern** is useful when my application needs to choose between different implementations or behaviors based on a configuration, user choice, or runtime condition. **Ports & Adapters** is useful when I want to keep my application independent of external technologies, such as Gemini, Grok, Prisma, or MongoDB, making the code easier to maintain and replace. Both can be used together: Ports & Adapters hides the external dependencies, while Strategy helps choose which implementation to use.

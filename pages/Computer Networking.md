@@ -131,6 +131,7 @@
 		- 7. **Physical:** Transmit bits over Wi-Fi, fiber, or copper
 		- **Receiver reverses steps** to reconstruct the original message.
 - ### HTTP Versions
+  collapsed:: true
 	- ### At a glance
 	  
 	  | Version | Core idea | Transport |
@@ -525,6 +526,7 @@
 	  | **Reason we need MAC** | Ethernet/Wi-Fi can only send using MAC, not IP | The local delivery needs the exact door |
 	  | **Reason we need ARP** | To translate IP → MAC before sending the frame | Finding the right door before handing the letter |
 - ### UDP (User Datagram Protocol)
+  collapsed:: true
 	- ### 🌍 **Layer Information**
 	- **OSI Layer:** Transport Layer (Layer 4)
 	- **TCP/IP Layer:** Transport Layer
@@ -586,6 +588,7 @@
 	  | RTP/RTCP (Real-time Transport Protocol) | UDP | varies |
 	  | QUIC (used by HTTP/3, Google) | UDP | varies |
 - ### TCP (Transmission Control Protocol)
+  collapsed:: true
 	- What is TCP?
 		- TCP (Transmission Control Protocol) is a **transport layer protocol** providing:
 		- Reliability
@@ -1288,11 +1291,12 @@
 	- ### ⭐ **2. Port 443 is doing TLS/SSL termination**
 	- Port 443 performs:
 	- ### ✔ TLS handshake
-	- ### ✔ Certificate verification
+	- ### ✔ Presenting the certificate (the browser is the one that verifies it)
 	- ### ✔ Encryption/decryption
 	- ### ✔ Connection security
 	- Your app does **not** want to deal with encryption — it slows things down and is complicated.
 	- So 443 is used for **security**, not for your application logic.
+	- 📖 How the TLS handshake and certificates actually work → ((e4939b22-af2e-47b2-8f69-0b7fa68ea958))
 	- ### ⭐ **3. After handling HTTPS, port 443 forwards traffic internally**
 	- Once the proxy on port 443 finishes the secure handshake, it forwards the request to your app running on a normal port.
 	- Example:
@@ -1612,16 +1616,462 @@
 	- ### ✔️ **`.com`, `.dev`, `.co` = top-level domain categories**
 	- ### ✔️ **None of these have any relation to port numbers**
 	- ### ✔️ **Ports are chosen by services & protocols, not domains**
-- ### TLS / SSL certificate
-  collapsed:: true
-	- ### Establishment
-		- 1. client send a req with client_random_number to server for getting public key and server_random_number and certificate
-		- 2. after receiving it validates the certificate signature using public key ( issuer) and public key (server) if validation is sucessfull then next step.
-		- 3. generates a random_secret and encrypts it using server public key and send it back to server
-		- 4. server decrypts the random_secret using its private key now they both have the shared random_secret
-		- 5. In TLS(≤1.2) session key is derived by ( random_secret , client_random_number ,server_random_number )
-		- 6. This session key is then used to encrypt data and decrypt data
+- ### TLS / SSL, HTTPS & the TLS Handshake
+  id:: e4939b22-af2e-47b2-8f69-0b7fa68ea958
+	- **In one line:** HTTPS = normal HTTP sent inside a **TLS** connection. TLS (Transport Layer Security) gives three guarantees:
+	  collapsed:: true
+		- **Confidentiality**: nobody on the path (Wi-Fi owner, ISP, router) can read the data.
+		- **Integrity**: nobody can change the data without being detected.
+		- **Authentication**: you are really talking to `shop.example.com`, proven by its **certificate**.
+	- **How to read this:** sections 0–2 are the building blocks, 3–6 explain the handshakes and certificates, and 7–9 tie everything together with a real deployment.
+	- ### 0. Key terms (read this first)
+	  collapsed:: true
+		- Five things that are easy to mix up:
+		  
+		  | Term | What it is | Secret? | Lives for | Used for |
+		  | --- | --- | --- | --- | --- |
+		  | **Private key** | One half of a key pair, kept only by its owner (e.g. the server) | Yes, never sent anywhere | Months (certificate key) or one handshake (ephemeral key) | Signing, or decrypting in RSA key transport |
+		  | **Certificate** | A file saying "this public key belongs to `shop.example.com`", signed by a CA. It contains the **public** key, never the private key | No, sent in every handshake | Days to months (Let's Encrypt default: 90 days) | Proving the server's identity |
+		  | **Key share** | A one-time public Diffie–Hellman value sent in ClientHello / ServerHello | No, visible on the wire | One handshake | Key agreement (ECDHE) |
+		  | **Shared secret** | The value both sides compute with Diffie–Hellman (in RSA key transport: the pre-master secret) | Yes, never sent in plaintext | One connection | Input to key derivation |
+		  | **Session (traffic) keys** | Symmetric keys derived from the shared secret, one per direction | Yes, never sent | One connection | Encrypting and authenticating HTTP data |
+		- Other terms used below:
+		  
+		  | Term | Meaning |
+		  | --- | --- |
+		  | **Public key** | The other half of a key pair. Safe to share; you can't work out the private key from it |
+		  | **CA (Certificate Authority)** | An organisation that browsers trust to check domain ownership and sign certificates (e.g. Let's Encrypt) |
+		  | **Trust store** | The list of root CA certificates pre-installed in your OS / browser |
+		  | **Ephemeral** | Generated fresh for one handshake, then thrown away |
+		  | **Pre-master / master secret** | TLS 1.2 names for the secret before and after mixing in the two random values |
+		  | **HKDF** | HMAC-based Key Derivation Function: turns one secret into many independent keys (TLS 1.3) |
+		  | **PRF** | Pseudo-Random Function: the key derivation function of TLS 1.2 |
+		  | **AEAD** | Authenticated Encryption with Associated Data (e.g. AES-GCM, ChaCha20-Poly1305): encrypts and adds a tamper-detection tag in one step |
+		  | **Cipher suite** | The named set of algorithms a connection uses, e.g. `TLS_AES_128_GCM_SHA256` |
+		  | **Transcript** | All handshake messages so far. TLS hashes it so that keys and signatures are tied to this exact handshake |
+		  | **Forward secrecy** | Stealing a long-term key later can't decrypt traffic that was recorded earlier |
+		- Three different jobs, three different tools:
+		  
+		  | Job | Question it answers | Where it appears in TLS |
+		  | --- | --- | --- |
+		  | **Encryption** | Can only the intended reader read this? | AES-GCM on all HTTP data. In TLS 1.2 RSA key transport only: RSA-encrypting the pre-master secret |
+		  | **Key agreement** | How can two strangers end up with the same secret without ever sending it? | ECDHE in TLS 1.3 (and in modern TLS 1.2) |
+		  | **Digital signature** | Who produced this, and was it changed? | The CA signs the certificate. The server signs the handshake (CertificateVerify) |
+	- ### 1. HTTP vs HTTPS
+	  id:: 398c4575-0502-49e0-b2c8-7e0d857f28c9
+	  collapsed:: true
+		- #### What HTTP is
+			- **HTTP** (HyperText Transfer Protocol) is the language browsers and servers speak. The client sends a **request**, and the server sends back a **response**. Each request stands on its own (HTTP is *stateless*); cookies add state on top.
+			- A request = method + path + headers + optional body:
+			  ```http
+			  POST /api/checkout HTTP/1.1
+			  Host: shop.example.com
+			  Cookie: session=8f2c91d7
+			  Content-Type: application/json
+			  
+			  {"cartId": 42, "cardToken": "tok_abc123"}
+			  ```
+			- A response = status code + headers + body:
+			  ```http
+			  HTTP/1.1 200 OK
+			  Content-Type: application/json
+			  Set-Cookie: session=8f2c91d7; Secure; HttpOnly
+			  
+			  {"orderId": 9001, "status": "paid"}
+			  ```
+			- With plain HTTP (port 80) these bytes travel **exactly as written**. Anyone on the path can **read** them (cookies, passwords, card tokens), **change** them (inject ads or malware), or **pretend to be the server**.
+		- #### What HTTPS means
+			- **HTTPS = HTTP over TLS.** Same methods, headers, status codes and bodies, but carried inside an encrypted, authenticated TLS connection, by default on **port 443**.
+			- The `https://` in the URL tells the browser: "open a TLS connection and check that the server's certificate is valid for this hostname before sending anything".
+			- Where TLS sits:
+			  ```
+			  HTTP   requests / responses        ← what your app reads and writes
+			  TLS    encrypt + authenticate      ← the "S" in HTTPS
+			  TCP    reliable byte stream (port 443)
+			  IP     routing between machines
+			  ```
+			- HTTP/3 is the exception: it runs over **QUIC** (on UDP), which has TLS 1.3 built in instead of layered on top. The protection is the same.
+		- #### Life of an HTTPS request
+			- ```
+			  1) In the browser, before encryption      → PLAINTEXT
+			     POST /api/checkout   Cookie: session=8f2c91d7   {"cartId": 42, ...}
+			  
+			  2) On the network, inside TLS records     → CIPHERTEXT + authentication tag
+			     17 03 03 00 9a | 4e b1 0c 77 e2 9f 3a ... | 8c 41 d0 ... (16 bytes)
+			     record header    unreadable bytes            tag (detects tampering)
+			  
+			  3) At the server, after TLS decrypts it   → PLAINTEXT again
+			     POST /api/checkout   Cookie: session=8f2c91d7   {"cartId": 42, ...}
+			  ```
+			- TLS protects data **in transit between the two endpoints**. At each end, the application still sees normal plaintext HTTP. That's why TLS doesn't remove the need for server-side security (see section 7).
+		- #### What TLS protects, and what it doesn't
+			- | Item | Hidden from someone watching the network? |
+			  | --- | --- |
+			  | URL path and query string (`/api/checkout?coupon=X`) | ✅ Yes, encrypted |
+			  | Headers, including `Cookie` and `Authorization` | ✅ Yes |
+			  | Request and response bodies (passwords, card tokens, JSON) | ✅ Yes |
+			  | Status codes and response headers | ✅ Yes |
+			  | The hostname (`shop.example.com`) | ❌ Usually visible: sent in ClientHello as SNI (Server Name Indication) unless Encrypted Client Hello (ECH) is used, and in DNS lookups unless DNS-over-HTTPS/TLS is used |
+			  | IP addresses and ports | ❌ No, routers need them |
+			  | Size and timing of messages | ❌ No, traffic patterns can leak hints |
+			- TLS does **not** protect against:
+				- **A compromised endpoint**: malware on the laptop or a hacked server sees plaintext.
+				- **Application bugs**: SQL injection, XSS, broken access control.
+				- **Phishing**: `paypa1-login.com` can get a perfectly valid certificate. The padlock means "encrypted, and talking to whoever controls this domain", not "this site is honest".
+				- **Data after it arrives**: databases, logs and backups need their own protection.
+				- **The first plain-HTTP visit**: if a user types `shop.example.com` and the site still answers on HTTP, an attacker can intercept that first request and keep the user on HTTP ("SSL stripping"). The `Strict-Transport-Security` (HSTS) response header tells browsers to use only HTTPS for that site from then on.
+	- ### 2. Symmetric vs asymmetric encryption
+	  collapsed:: true
+		- #### Symmetric encryption: one shared key
+			- The **same key** encrypts and decrypts:
+			  ```
+			  ciphertext = Encrypt(key, "card=4111...")
+			  plaintext  = Decrypt(key, ciphertext)      ← needs the SAME key
+			  ```
+			- **Fast**: AES is built into most CPUs, so it can encrypt gigabytes per second. TLS uses it for all HTTP data.
+			- **The problem**: both sides need the same key first. Two strangers on the internet can't just send it to each other, because an eavesdropper would copy it. Asymmetric cryptography solves this.
+			- Examples: AES-128-GCM, AES-256-GCM, ChaCha20-Poly1305.
+		- #### Asymmetric (public-key) cryptography: a key pair
+			- Each party generates a **private key** (kept secret, never leaves the machine) and a matching **public key** (shared with anyone). They are mathematically linked, but you can't feasibly work out the private key from the public key.
+			- Analogy: you hand out open padlocks (public key) to everyone. Anyone can snap one shut on a box, but only you have the key that opens it (private key).
+			- **Slow** compared with symmetric encryption, so TLS only uses it during the handshake.
+			- Examples: RSA and ECDSA (signatures; RSA can also encrypt), X25519 and P-256 (Diffie–Hellman key agreement).
+		- #### Public-key encryption, private-key decryption (the RSA way)
+			- ```
+			  Client wants to send the server a secret:
+			    ciphertext = RSA-Encrypt(server PUBLIC key, secret)       ← anyone can do this
+			    secret     = RSA-Decrypt(server PRIVATE key, ciphertext)  ← only the server can
+			  ```
+			- This is exactly what **TLS 1.2 RSA key transport** does (section 3).
+			- **TLS 1.3 never does this.** It uses key agreement (ECDHE) to create the secret and digital signatures to prove identity.
+		- #### Digital signatures are not encryption
+			- ```
+			  Server proves it produced a message:
+			    signature = Sign(server PRIVATE key, message)             ← only the server can
+			    valid?    = Verify(server PUBLIC key, message, signature)  ← anyone can check
+			  ```
+			- Encryption **hides** a message. A signature hides nothing; it proves **who** produced the message and that it **wasn't changed**.
+			- You'll often read "signing = encrypting with the private key". That's a loose analogy for textbook RSA only, and it's wrong for ECDSA and Ed25519. Treat Sign / Verify as their own operations.
+			- In TLS: the **CA** signs the certificate, and the **server** signs the handshake (CertificateVerify).
+		- #### Comparison
+			- | | Symmetric | Asymmetric |
+			  | --- | --- | --- |
+			  | Keys | One shared secret key | Private + public key pair |
+			  | Speed | Very fast | Much slower |
+			  | Main difficulty | Getting the key to the other side safely | Too slow for bulk data |
+			  | Job in TLS | Encrypt and authenticate all HTTP data | Handshake only: agree on a secret, prove identity |
+			  | Examples | AES-GCM, ChaCha20-Poly1305 | RSA, ECDSA, X25519 (ECDHE) |
+		- #### Why TLS uses both (a "hybrid" system)
+			- 1. **Handshake**: asymmetric crypto, once per connection, to agree on a secret and authenticate the server.
+			- 2. **Key derivation**: that secret is turned into symmetric **session keys**.
+			- 3. **Data**: every HTTP request and response is protected with those fast symmetric keys.
+			- Asymmetric crypto solves "how do we share a key?"; symmetric crypto does the heavy lifting.
+	- ### 3. Older handshake: TLS 1.2 with RSA key transport
+	  collapsed:: true
+		- **Idea:** the client creates a secret, locks it with the server's **public key**, and sends it. Only the server's **private key** can unlock it.
+		- Steps:
+			- 1. **Hellos**: both sides exchange random numbers; the server sends its certificate (which contains its public key).
+			- 2. **Client checks the certificate**: trusted CA, right domain, not expired.
+			- 3. **Client creates a pre-master secret**: a fresh random value for this connection only.
+			- 4. **Client encrypts it with the server's public key** and sends it.
+			- 5. **Server decrypts it with its private key.** Now both sides know the same secret.
+			- 6. **Both derive the session keys** from the pre-master secret + the two random numbers.
+			- 7. **Finished** messages confirm nothing was tampered with. Then HTTP flows, encrypted with the symmetric session keys.
+		- Diagram (2 round trips before any HTTP data):
+		  ```
+		  Client                                      Server
+		    |-- Hello (client random) -------------------->|
+		    |<-- Hello (server random) + certificate ------|
+		    |  check certificate                           |
+		    |  create pre-master secret (PMS)              |
+		    |-- PMS, encrypted with server's public key -->|  decrypt with private key
+		    |  both: PMS + randoms → session keys          |
+		    |<---------- Finished (both sides) ----------->|
+		    |<============== encrypted HTTP ==============>|
+		  ```
+		- ⚠️ **The client does NOT send its private key.** The browser usually has no key pair at all. It sends a brand-new random secret, encrypted so only the server can read it.
+		- **Why it's gone:** no forward secrecy. If the server's private key is ever stolen, all recorded past traffic can be decrypted. TLS 1.3 removed it, and RFC 10015 (2026) now forbids it in TLS 1.2 too.
+		- **Note:** TLS 1.2 could also use ECDHE (the method in section 4), so not every TLS 1.2 connection worked this way.
+	- ### 4. Modern handshake: TLS 1.3 with ECDHE
+	  collapsed:: true
+		- **Idea:** nothing secret is ever sent. Each side keeps a private value, sends a public **key share**, and both **compute** the same secret from them. This is Diffie–Hellman key agreement; ECDHE is the elliptic-curve, ephemeral (single-use) version.
+		- **Toy example** (⚠️ tiny numbers, insecure, just for intuition). Public values: p = 23, g = 5.
+			- Client: private a = 6 → sends A = 5⁶ mod 23 = **8**
+			- Server: private b = 15 → sends B = 5¹⁵ mod 23 = **19**
+			- Client computes 19⁶ mod 23 = **2**; server computes 8¹⁵ mod 23 = **2**. Same secret, never sent.
+			- An eavesdropper sees 8 and 19 but can't work out 2 without a or b (at real key sizes this is infeasible).
+		- Steps:
+			- 1. **ClientHello**: client random + the client's key share.
+			- 2. **ServerHello**: server random + the server's key share. Both now compute the same shared secret.
+			- 3. **Handshake keys** are derived from that secret (using HKDF). Everything after this is encrypted.
+			- 4. **Server proves its identity**: it sends its certificate, a **CertificateVerify** signature over the handshake (made with the certificate's private key), and **Finished**.
+			  id:: 6ad4c07b-b11d-4fe3-a08f-6b8e3962abe9
+			- 5. **Client checks** the certificate (trusted CA, domain, dates), the signature and Finished, then sends its own **Finished**.
+			- 6. **Session keys** are derived and HTTP flows encrypted. Only one round trip before data.
+		- Diagram (1 round trip before HTTP data):
+		  ```
+		  Client                                      Server
+		    |-- ClientHello (random + key share A) ------->|
+		    |<-- ServerHello (random + key share B) -------|
+		    |  both: A + B → same secret → keys            |
+		    |<-- {certificate, signature, Finished} -------|
+		    |  check certificate + signature               |
+		    |-- {Finished} ------------------------------->|
+		    |<============== encrypted HTTP ==============>|
+		  
+		  { } = already encrypted
+		  ```
+		- **Remember:**
+			- **Key shares are public values, not encrypted data.** Nothing is encrypted with the server's public key, and no private key is ever sent.
+			- **The key share is not the certificate's key.** Certificate key = long-lived, used for signing (proving identity). Key share = single-use, used to agree on the secret.
+			- **Forward secrecy:** the private values are deleted after the handshake, so stealing the server's key later can't decrypt old traffic.
+	- ### 5. How certificates prevent man-in-the-middle (MITM) attacks
+	  collapsed:: true
+		- **Problem:** Diffie–Hellman only guarantees "I share a secret with *whoever* sent this key share", not *who* that is. An attacker in the middle (fake Wi-Fi, hacked router, ARP spoofing), call her Mallory, can swap the key shares:
+		  ```
+		  Browser               Mallory               Server
+		     |                     |                     |
+		     |-- key share A ----->|                     |
+		     |                     |-- key share M1 ---->|
+		     |                     |<----- key share B --|
+		     |<---- key share M2 --|                     |
+		     |                     |                     |
+		     |<==== secret 1 =====>|<==== secret 2 =====>|
+		  ```
+		- Mallory decrypts, reads or changes, and re-encrypts everything. The math works on both sides, so **neither side notices**. So the server must prove that its key share really came from the owner of `shop.example.com`.
+		- **Certificate** = a file saying "this public key belongs to `shop.example.com`" (domain names, public key, issuer, expiry dates), **signed by a CA**.
+		- **What a CA does:**
+			- 1. Checks that you control the domain (e.g. Let's Encrypt asks you to put a token on your site or in DNS).
+			- 2. Signs the certificate with its **private key**. Anyone can verify the signature with the CA's public key, and changing one byte breaks it.
+		- **Chain of trust:** Root CA → signs → Intermediate CA → signs → your certificate.
+			- The server sends its certificate + the intermediate.
+			- Root certificates are **already installed** in your OS / browser (the trust store). The browser does **not** contact the CA on each visit; checking the chain is local math.
+		- **Browser checks:**
+			- 1. The chain leads to a trusted root.
+			- 2. The domain matches the certificate.
+			- 3. The certificate hasn't expired. Lifetimes are shrinking: 200 days max in 2026, 47 days by 2029.
+			- If any check fails, the browser shows a full-page warning. Revocation (cancelling a certificate early, e.g. after a key leak) is a separate mechanism.
+		- **CertificateVerify** (TLS 1.3): the server signs the whole handshake, including both key shares, with the certificate's private key.
+			- A certificate is public, so anyone can copy it. This signature proves the server actually **holds the private key**.
+			- It's tied to **this** handshake, so it can't be replayed.
+		- **Why Mallory fails:** if she swaps key shares, the server's signature no longer matches the handshake the browser saw. She can't forge a new one without the private key, and no CA will give her a certificate for `shop.example.com`.
+		- **Finished:** each side sends a checksum (MAC) over the handshake, confirming both saw the same messages.
+		- **Remember:** certificate = *who* the server is · ECDHE = the shared secret · CertificateVerify ties them together. The certificate key (long-lived, for signing) is not the key share (single-use).
+	- ### 6. SSL vs TLS
+	  collapsed:: true
+		- **SSL** (Secure Sockets Layer) was Netscape's protocol from the mid-1990s. Its design had flaws that couldn't be patched (e.g. the POODLE attack on SSL 3.0), so the IETF replaced it with **TLS** (Transport Layer Security). TLS 1.0 was essentially SSL 3.0, fixed and renamed.
+		- | Version | Status |
+		  | --- | --- |
+		  | SSL 2.0, SSL 3.0 | ❌ Deprecated (broken) |
+		  | TLS 1.0, TLS 1.1 | ❌ Deprecated |
+		  | TLS 1.2 (2008) | ✅ Still fine, with ECDHE |
+		  | TLS 1.3 (2018) | ✅ Current standard |
+		- **Why it's still called an "SSL certificate":** habit, and tools still use the name (OpenSSL, nginx's `ssl_certificate`). The certificate isn't tied to a protocol version, so "SSL", "TLS" and "HTTPS" certificate all mean the same thing. The connection itself uses TLS.
+		- **TLS 1.2 vs TLS 1.3:**
+		  
+		  | | TLS 1.2 | TLS 1.3 |
+		  | --- | --- | --- |
+		  | Key exchange | RSA key transport or (EC)DHE | (EC)DHE only |
+		  | Forward secrecy | Only with (EC)DHE | Always |
+		  | Round trips before data | 2 | 1 |
+		  | Certificate visible on the network | Yes | No (encrypted) |
+		  | How the server proves its identity | Decrypting the secret (RSA) or signing its key share (with (EC)DHE) | Signing the whole handshake (CertificateVerify) |
+		  | Old, weak algorithms | Still allowed | Removed |
+	- ### 7. What happens after the handshake
+	  collapsed:: true
+		- Both sides now hold two **application traffic keys**: one for client → server and one for server → client. Everything from here on uses them.
+		- #### TLS records: how each chunk of HTTP is protected
+			- TLS splits the HTTP byte stream into **records** of up to 16 KB of plaintext each.
+			- Each record is protected with an **AEAD** cipher (e.g. AES-128-GCM):
+			  ```
+			  nonce            = static IV  XOR  record sequence number
+			  ciphertext + tag = AEAD-Encrypt(traffic_key, nonce, plaintext, additional data = record header)
+			  record on wire   = header (type 0x17, version 0x0303, length) | ciphertext | 16-byte tag
+			  ```
+			- **Confidentiality**: without the traffic key, the ciphertext is unreadable.
+			- **Integrity and authentication**: if a single bit is changed, the tag check fails and the connection is closed.
+			- **No replay or reordering**: the sequence number is never sent; both sides count records. A replayed, dropped or reordered record would use the wrong nonce, so decryption fails.
+		- #### Walk-through: `POST /api/checkout`
+			- 1. The **browser** builds the plaintext HTTP request: headers, session cookie, JSON body.
+			- 2. **Client-side TLS** splits it into records, encrypts each with the client → server traffic key, and hands them to TCP.
+			- 3. **On the network** only TLS records are visible, plus IPs, ports and sizes.
+			- 4. **Server-side TLS** (Nginx, a load balancer, or Node itself) decrypts each record with the same key and checks the tag and sequence number.
+			- 5. The **app** receives plain HTTP: it checks the session, validates the input, charges the payment token and writes the order to the database.
+			- 6. The **response** goes back the same way using the server → client key. The browser decrypts, verifies and renders it.
+			- The connection stays open, so later requests skip the handshake (HTTP keep-alive, or HTTP/2 multiplexing).
+		- #### TLS termination and the hop to the backend
+			- In real deployments TLS usually ends ("terminates") at a reverse proxy or load balancer, not in your app (see **Extras → ⭐ 2. Port 443 is doing TLS/SSL termination** above). From there:
+			  ```
+			  Browser ══TLS══► Nginx :443 ──plain HTTP──► Node 127.0.0.1:3000   (same machine: fine)
+			  Browser ══TLS══► Cloud LB :443 ──?──► app servers in a VPC          (decide: re-encrypt or not)
+			  ```
+			- On the same machine (localhost), plain HTTP is fine.
+			- Across machines or networks, re-encrypt with TLS to the backend, or use **mTLS** (mutual TLS, where both sides present certificates), as service meshes do.
+			- The proxy passes the original client details in headers such as `X-Forwarded-For` and `X-Forwarded-Proto: https`. The app should only trust these headers when they come from its own proxy.
+		- #### Why TLS doesn't replace backend security
+			- TLS proves the **server's** identity to the browser, not the **user's** identity to the server. You still need login, sessions or JWTs, and authorization checks (e.g. "can user 42 see order 9001?").
+			- An attacker can open a perfectly valid TLS connection and send malicious input. You still need input validation, parameterised SQL queries, rate limiting and CSRF protection.
+			- Data **at rest** (database, logs, backups), secret management and patching are outside TLS.
+			- Harden cookies with `Secure` (only sent over HTTPS), `HttpOnly` (hidden from JavaScript) and `SameSite`.
+			- Send HSTS so browsers never fall back to HTTP:
+			  ```
+			  Strict-Transport-Security: max-age=31536000; includeSubDomains
+			  ```
+	- ### 8. Real-world example: deploying an e-commerce website
+	  collapsed:: true
+		- **Setup**: `shop.example.com` is a React frontend hosted on **Vercel**; `api.example.com` is a Node.js API on a **cloud VM** (e.g. AWS EC2 or a DigitalOcean droplet).
+		- ```mermaid
+		  flowchart LR
+		      U["Browser"] -->|"DNS lookups"| D[("DNS")]
+		      U -->|"HTTPS shop.example.com"| V["Vercel edge<br/>TLS ends here<br/>auto Let's Encrypt cert"]
+		      V --> R["React static build"]
+		      U -->|"HTTPS api.example.com :443"| N["Nginx on the VM<br/>TLS ends here<br/>Certbot cert"]
+		      N -->|"plain HTTP 127.0.0.1:3000"| A["Node.js API"]
+		      A --> DB[("Database")]
+		      LE["Let's Encrypt CA"] -.->|"issues and renews"| V
+		      LE -.->|"issues and renews via Certbot"| N
+		  ```
+		- #### 1. Domain and DNS
+			- Buy `example.com` from a domain registrar (yearly fee).
+			- Create DNS records at your DNS provider:
+			  
+			  | Type | Name | Value | Points to |
+			  | --- | --- | --- | --- |
+			  | CNAME | `shop` | The target Vercel shows under Project → Settings → Domains | Vercel's edge network |
+			  | A | `api` | The VM's public IP, e.g. `203.0.113.10` | Your VM |
+			- Optional **CAA record**: limits which CAs may issue certificates for your domain, e.g. `example.com. CAA 0 issue "letsencrypt.org"`. If you add one, it must allow Let's Encrypt, because both Vercel and Certbot use it.
+		- #### 2. Frontend on Vercel: certificates are automatic
+			- Add `shop.example.com` under Project → Settings → Domains.
+			- Once DNS points to Vercel, Vercel requests a **Let's Encrypt** certificate for you:
+				- HTTP-01 challenge for normal domains.
+				- DNS-01 challenge for wildcard domains, which requires Vercel's nameservers.
+			- Vercel installs the certificate on its edge network and **renews it automatically**, 14–30 days before expiry. You never handle the private key, and there's no extra cost.
+			- TLS ends at Vercel's edge. The React app running in the browser then calls `https://api.example.com`, which is a **separate TLS connection** straight to your VM.
+		- #### 3. Backend on a VM: Nginx + Certbot + Let's Encrypt
+			- **a. Keep Node private.** Bind it to localhost only:
+			  ```js
+			  app.listen(3000, "127.0.0.1"); // reachable only from this machine, i.e. from Nginx
+			  ```
+			- **b. Open only ports 80 and 443** in the firewall / security group. Port 80 is needed for HTTP-01 challenges and the HTTP → HTTPS redirect. Don't open 3000.
+			- **c. Nginx as a reverse proxy** (`/etc/nginx/sites-available/api`):
+			  ```nginx
+			  server {
+			      listen 80;
+			      server_name api.example.com;
+			  
+			      location / {
+			          proxy_pass http://127.0.0.1:3000;
+			          proxy_set_header Host $host;
+			          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+			          proxy_set_header X-Forwarded-Proto $scheme;
+			      }
+			  }
+			  ```
+			- **d. Get the certificate with Certbot:**
+			  ```bash
+			  sudo certbot --nginx -d api.example.com
+			  ```
+				- 1. Registers an ACME account with Let's Encrypt (ACME = Automatic Certificate Management Environment, the protocol for automated issuance).
+				- 2. Proves you control the domain with the HTTP-01 challenge (serves a token under `/.well-known/acme-challenge/`).
+				- 3. Saves the certificate and private key under `/etc/letsencrypt/live/api.example.com/`.
+				- 4. Edits the Nginx config to serve HTTPS and, if you choose, redirect HTTP to HTTPS.
+			- The result looks roughly like this (simplified):
+			  ```nginx
+			  server {
+			      listen 443 ssl;
+			      server_name api.example.com;
+			  
+			      ssl_certificate     /etc/letsencrypt/live/api.example.com/fullchain.pem; # leaf + intermediate
+			      ssl_certificate_key /etc/letsencrypt/live/api.example.com/privkey.pem;   # private key: never share
+			      # nginx 1.27.3+ already defaults to: ssl_protocols TLSv1.2 TLSv1.3;
+			  
+			      location / {
+			          proxy_pass http://127.0.0.1:3000;
+			          proxy_set_header Host $host;
+			          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+			          proxy_set_header X-Forwarded-Proto $scheme;
+			      }
+			  }
+			  
+			  server {
+			      listen 80;
+			      server_name api.example.com;
+			      return 301 https://$host$request_uri;   # HTTP → HTTPS
+			  }
+			  ```
+			- **e. Renewal is automatic.** Certbot installs a systemd timer or cron job that runs `certbot renew` periodically. It renews when less than 1/3 of the lifetime remains (about day 60 of 90). Check it with:
+			  ```bash
+			  sudo certbot renew --dry-run          # test renewal against the staging server
+			  systemctl list-timers | grep certbot  # see the scheduled job
+			  ```
+			- Lifetimes are shrinking (Let's Encrypt: 64 days from Feb 2027, 45 days from Feb 2028), so never plan to renew by hand. Automation is the whole point.
+		- #### Why you usually don't need to buy a certificate
+			- For proving domain ownership (DV certificates), browsers trust Let's Encrypt just like paid CAs: same padlock, same TLS, same encryption strength.
+			- Paid certificates can make sense when you need **OV/EV** (organisation identity checks, which Let's Encrypt doesn't issue), a support contract or warranty, or a specific compliance or enterprise requirement.
+		- #### Who pays for what
+			- | Item | Who pays | Notes |
+			  | --- | --- | --- |
+			  | Domain name | You, to the registrar | Yearly; price depends on the TLD (`.com`, `.dev`, …) |
+			  | Frontend hosting | You, to Vercel | Free tier or a paid plan (check the plan terms for commercial sites); certificates included |
+			  | Backend VM | You, to the cloud provider | Monthly |
+			  | Certificate issuance | Free to you | Let's Encrypt charges no fee |
+			  | Running Let's Encrypt | ISRG (Internet Security Research Group), a nonprofit | Funded by corporate sponsors (e.g. Google, AWS, Microsoft, Mozilla), foundations and individual donors |
+			- The idea behind free certificates: HTTPS everywhere makes the web safer for everyone, and full automation keeps the cost of each certificate very low.
+	- ### 9. Complete handshake summary
+	  collapsed:: true
+		- #### From typing a URL to seeing the page (HTTP/1.1 or HTTP/2 over TLS 1.3)
+			- 1. You type `https://shop.example.com/cart` and press Enter.
+			- 2. **DNS**: the browser resolves `shop.example.com` to an IP address.
+			- 3. **TCP**: three-way handshake (SYN → SYN-ACK → ACK) to port 443. (HTTP/3 uses QUIC over UDP instead and combines this step with the TLS handshake.)
+			- 4. **ClientHello**: `client_random`, supported versions and cipher suites, SNI `shop.example.com`, and the client's ephemeral key share $A$.
+			- 5. **ServerHello**: `server_random`, the chosen cipher suite, and the server's ephemeral key share $B$.
+			- 6. **Key agreement**: both compute the same ECDHE shared secret ($aB = bA$). It is never sent.
+			- 7. **Handshake keys**: HKDF derives them, and everything after this point is encrypted.
+			- 8. **Server authentication**: the server sends EncryptedExtensions, its certificate chain, CertificateVerify (a signature over the transcript) and Finished.
+			- 9. **Certificate verification**: the browser checks the chain against its trust store, the hostname against the SANs, the validity dates, the CertificateVerify signature (using the certificate's public key) and the Finished MAC.
+			- 10. **Client Finished**: the browser confirms it saw the same handshake.
+			- 11. **Session keys**: HKDF derives the application traffic keys, one per direction.
+			- 12. **Encrypted request**: `GET /cart` with its cookies goes out in TLS records protected with AEAD.
+			- 13. **Server side**: TLS decrypts and verifies each record, and the app handles the plaintext HTTP (auth, business logic, database).
+			- 14. **Encrypted response**: the server sends `200 OK` + HTML, encrypted with the server → client key. The browser decrypts, verifies and renders the page, and the connection is reused for further requests.
+		- ```mermaid
+		  sequenceDiagram
+		      autonumber
+		      participant Br as Browser
+		      participant DNS as DNS resolver
+		      participant Srv as shop.example.com
+		      Br->>DNS: Where is shop.example.com?
+		      DNS->>Br: 203.0.113.20 (example IP)
+		      Br->>Srv: TCP SYN
+		      Srv->>Br: TCP SYN-ACK
+		      Br->>Srv: TCP ACK
+		      Br->>Srv: ClientHello (key share A, SNI)
+		      Srv->>Br: ServerHello (key share B)
+		      Note over Br,Srv: ECDHE shared secret, then HKDF handshake keys
+		      Srv->>Br: EncryptedExtensions, Certificate, CertificateVerify, Finished
+		      Note over Br: Check chain against trust store, hostname, dates, signature
+		      Br->>Srv: Finished
+		      Note over Br,Srv: HKDF application traffic keys
+		      Br->>Srv: GET /cart (encrypted TLS records)
+		      Note over Srv: Decrypt, app handles the request
+		      Srv->>Br: 200 OK + HTML (encrypted)
+		      Note over Br: Decrypt, verify, render
+		  ```
+		- #### RSA key transport vs TLS 1.3 ECDHE
+			- | | TLS 1.2 RSA key transport (older) | TLS 1.3 with ECDHE (modern) |
+			  | --- | --- | --- |
+			  | How the secret is established | **Key transport**: the client generates a pre-master secret and sends it to the server | **Key agreement**: both sides compute it from exchanged ephemeral key shares |
+			  | Is a client-generated secret encrypted with the server's public key? | **Yes**: the pre-master secret is RSA-encrypted with the certificate's public key | **No**: key shares travel in the clear, and nothing is encrypted with the server's public key |
+			  | Is any private key sent? | No | No |
+			  | What the certificate's key is used for | Decrypting the pre-master secret | Signing the handshake (CertificateVerify) |
+			  | Server authentication | Implicit: only the key owner can decrypt the pre-master secret and produce a valid Finished | Explicit: CertificateVerify signature over the transcript, plus Finished |
+			  | Forward secrecy | **No**: a stolen RSA key decrypts every recorded past session | **Yes**: the ephemeral values are deleted after the handshake |
+			  | Round trips before HTTP data | 2 | 1 |
+			  | Certificate visible to observers | Yes | No (encrypted) |
+			  | Key derivation | PRF | HKDF |
+			  | Status | Removed in TLS 1.3; deprecated in TLS 1.2 (RFC 10015, 2026) | Current standard (RFC 8446, revised as RFC 9846) |
 - ### Protocols (pending and important → HTTP, HTTPS, FTP,SMTP, etc.)
+	- HTTP & HTTPS → ((398c4575-0502-49e0-b2c8-7e0d857f28c9))
 - ### HTTP Status Codes
   collapsed:: true
 	- 1. 1xx (Informational):
