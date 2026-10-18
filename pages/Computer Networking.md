@@ -131,7 +131,6 @@
 		- 7. **Physical:** Transmit bits over Wi-Fi, fiber, or copper
 		- **Receiver reverses steps** to reconstruct the original message.
 - ### HTTP Versions
-  collapsed:: true
 	- ### At a glance
 	  
 	  | Version | Core idea | Transport |
@@ -155,6 +154,66 @@
 	   | Connection migration | No | No | No | Yes |
 	   | Typical browser setup | Many connections | ~6 per origin | Usually 1 | Usually 1 |
 	   | Performance | Slow | Better | Much better | Best on lossy/mobile networks |
+	- ### Example: how many connections?
+		- **Setup:** the React app on `shop.example.com` fires 4 API calls at once to `api.example.com`: `/user`, `/cart`, `/products`, `/recs`.
+		- **HTTP/1.0**: a new connection for every request
+		  ```
+		  conn 1: [TCP + TLS handshake] GET /user     → response → CLOSE
+		  conn 2: [TCP + TLS handshake] GET /cart     → response → CLOSE
+		  conn 3: [TCP + TLS handshake] GET /products → response → CLOSE
+		  conn 4: [TCP + TLS handshake] GET /recs     → response → CLOSE
+		  ```
+			- 4 TCP connections, each used once. Calling `/cart` again means another full handshake.
+		- **HTTP/1.1**: connections are reused, but each carries one request at a time
+		  ```
+		  conn 1: [handshake] GET /user     → response | stays open, reused later
+		  conn 2: [handshake] GET /cart     → response | stays open
+		  conn 3: [handshake] GET /products → response | stays open
+		  conn 4: [handshake] GET /recs     → response | stays open
+		  ```
+			- 4 TCP connections. The browser opens up to **6 per domain** to run requests in parallel.
+			- 10 calls → 6 connections, and 4 requests **wait in a queue** for one to free up.
+			- A slow `/recs` blocks its connection until it finishes.
+		- **HTTP/2**: one connection, all requests at once
+		  ```
+		  conn 1: [handshake] ══ /user ══ /cart ══ /products ══ /recs ══
+		          all 4 in flight together as separate "streams"
+		  ```
+			- 1 TCP connection, even with 10 or 50 calls. Nothing queues.
+		- **HTTP/3**: like HTTP/2, but over QUIC (UDP)
+		  ```
+		  QUIC conn 1: [one combined handshake] ══ /user ══ /cart ══ /products ══ /recs ══
+		  ```
+			- 0 TCP connections, 1 QUIC connection. QUIC does the connection and TLS handshake together.
+		- **Two tabs**: the browser shares one connection pool across all tabs (same window / profile), not one per tab.
+			- HTTP/1.1: 2 tabs × 4 calls = 8 requests → 6 connections, and 2 requests wait.
+			- HTTP/2 / HTTP/3: both tabs share the same single connection.
+			- An incognito window or a different browser has its own pool.
+		- **Summary** (connections to `api.example.com`):
+		  
+		  | | 4 calls, 1 tab | 4 calls each, 2 tabs | 10 calls |
+		  | --- | --- | --- | --- |
+		  | **HTTP/1.0** | 4 (opened and closed) | 8 in total (max 6 open at once) | 10 in total (max 6 open at once) |
+		  | **HTTP/1.1** | 4 (kept and reused) | 6, with 2 requests waiting | 6, with 4 requests waiting |
+		  | **HTTP/2** | 1 TCP | 1 TCP | 1 TCP |
+		  | **HTTP/3** | 1 QUIC (0 TCP) | 1 QUIC | 1 QUIC |
+		- Different domains need separate connections. With HTTP/2 this page uses **2 in total**: 1 to `shop.example.com` and 1 to `api.example.com`.
+	- ### Head-of-line blocking: why HTTP/3 exists
+		- **TCP rule:** TCP is one ordered stream of bytes. The OS hands data to the browser **strictly in order** and never skips ahead, even when later data has already arrived.
+		- In HTTP/2 all 4 responses are mixed into that one stream. If one packet is lost:
+		  ```
+		  Server sends:  P1(/user)  P2(/cart)  P3(/products)  P4(/recs)  P5(/user)
+		  Network:       ✓          ✗ LOST     ✓              ✓          ✓
+		  
+		  HTTP/2 (TCP):  P1 delivered. P3, P4, P5 have ARRIVED, but the OS holds them
+		                 until P2 is resent (~1 round trip) → ALL responses wait
+		  
+		  HTTP/3 (QUIC): P1, P3, P4, P5 go to their own requests immediately
+		                 → only /cart waits
+		  ```
+		- **Analogy:** HTTP/2 over TCP is a single checkout queue, so one stuck customer holds up everyone behind them. HTTP/3 gives each request its own lane.
+		- The wait is short (about one round trip) and mostly noticeable on lossy networks: weak mobile signal, busy Wi-Fi.
+		- HTTP/1.1 doesn't have this cross-request problem: each request has its own TCP connection, so a lost packet only delays that one request. On very lossy networks HTTP/2's single connection can do worse than HTTP/1.1's six, which is one of the main reasons HTTP/3 was created.
 - ### TCP/IP 4-Layer Model
   collapsed:: true
 	- **Definition:**
