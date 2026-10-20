@@ -1476,6 +1476,7 @@ collapsed:: true
 			- Works primarily for HTTP/HTTPS traffic
 			- Requires an Ingress Controller to function
 			- Can become complex with many annotations
+		- **3.12 Ingress vs API Gateway** → see [[API Gateway]] ((0ceeeaa7-df77-406f-88d2-baf5425e5807))
 	- ### 🟥 **4. Network Policies**
 	  collapsed:: true
 		- Network Policies control **which Pods can talk to which Pods**.
