@@ -665,5 +665,142 @@
 		- The API gateway is the edge: clients hit it first, and Kubernetes runs the backends behind it.
 		- Inside the cluster, the gateway is just more pods at the edge. Outside, it's a separate box in front of the cluster.
 	- One line: Kubernetes runs your services; the API gateway decides who can reach them and how, either as the cluster's ingress (inside) or in front of it (outside).
+- 8) Rate limiting and quotas
+	- Definition
+		- Rate limiting = cap how many requests a client can make in a time window. Protects backends from overload and abuse, and stops one client from starving the others.
+		- Quota = the same idea over a long window (per day / per month), usually per consumer and tied to a plan (free vs paid).
+	- Who is "a client"? (the key)
+		- | Key | Limits per | Good for |
+		  | --- | --- | --- |
+		  | client IP (`remote_addr`) | IP address | public endpoints without auth |
+		  | consumer (`consumer_name`) | API client (key / JWT user) | per-partner plans and quotas |
+		  | a combination (e.g. consumer + route) | that pair | different limits per endpoint per client |
+	- The 3 APISIX plugins
+		- | Plugin | Limits | How |
+		  | --- | --- | --- |
+		  | limit-req | requests per second | `rate` + `burst`: requests above the rate wait in a queue up to `burst` extra; beyond that they are rejected (leaky bucket) |
+		  | limit-count | requests per time window | `count` + `time_window` in seconds (e.g. 1000 per 3600s); good for quotas |
+		  | limit-conn | concurrent requests | `conn` + `burst`; good for slow / long requests (uploads, streaming) |
+	- Example (limit-count: 3 requests per 60s per consumer, rejected_code 429)
+	  ```
+	  request 1 -> 200   X-RateLimit-Remaining: 2
+	  request 2 -> 200   X-RateLimit-Remaining: 1
+	  request 3 -> 200   X-RateLimit-Remaining: 0
+	  request 4 -> 429   (rejected until the window resets; X-RateLimit-Reset = seconds left)
+	  ```
+		- limit-count also returns `X-RateLimit-Limit`, so clients can see their quota.
+	- Rejected status code
+		- APISIX's default rejected code is 503. Set `rejected_code: 429` (Too Many Requests), the standard code, so clients know to slow down instead of thinking the service is down.
+	- Several gateway nodes
+		- Local counters (default): each node counts on its own. 3 nodes with limit 100 ≈ 300 requests in total.
+		- Shared counter: limit-count with `policy: redis` (or redis-cluster). All nodes share one counter, so the limit is the real total.
+	- Where to put it
+		- Route / service: protect one endpoint or backend.
+		- Consumer: per-client plans (free = 100/day, paid = 10,000/day).
+		- Global rule: a safety net for every request.
+	- NestJS analogy: like `@Throttle()` from @nestjs/throttler, but enforced at the edge for every service.
+- 9) TLS / SSL at the gateway
+	- TLS basics (handshake, certificates, CAs) -> [[Computer Networking]] ((e4939b22-af2e-47b2-8f69-0b7fa68ea958))
+	- Where TLS ends
+	  ```
+	  client ==HTTPS==> GATEWAY --HTTP or HTTPS--> backend
+	                    ^                ^
+	          TLS terminated here   upstream "Scheme" (see 4) Upstreams)
+	  ```
+		- The gateway holds the certificates. Backends behind it don't need their own, unless you want the gateway -> backend hop encrypted too (scheme HTTPS).
+	- SSL object (APISIX)
+		- A certificate + its private key + the domain names (SNIs) it is for.
+		  ```
+		  SSL "shop-cert"
+		    +-- cert: -----BEGIN CERTIFICATE----- ...
+		    +-- key:  -----BEGIN PRIVATE KEY----- ...   (secret)
+		    +-- snis: ["shop.example.com", "*.shop.example.com"]
+		  ```
+		- During the TLS handshake the client sends the domain it wants (SNI). The gateway picks the SSL object whose snis match. No match -> the handshake fails.
+		- Wildcard: `*.test.com` covers `www.test.com` and `mail.test.com`.
+		- One gateway, many domains = one SSL object per domain (or a wildcard).
+	- Protocol versions
+		- APISIX default: TLSv1.2 + TLSv1.3 (TLSv1.1 and older are off). Can be set per SSL object.
+	- HTTP -> HTTPS
+		- redirect plugin with `http_to_https: true` -> 301 to the same URI on HTTPS.
+	- Renewal
+		- Certificates expire (Let's Encrypt: 90 days today, getting shorter). The SSL object must be updated before expiry, so automate it: a renewal job that updates the SSL object through the Admin API.
+		- In Kubernetes, cert-manager can renew the certificate into a Secret that the Ingress uses -> [[Kubernetes]] (cert-manager).
+- 10) Observability
+	- Why at the gateway: it sees EVERY request, so it is the best single place to measure traffic, errors and latency.
+	- Three signals
+		- | Signal | Answers | APISIX plugin |
+		  | --- | --- | --- |
+		  | Metrics | how many, how fast, how many errors (numbers over time) | prometheus (endpoint `/apisix/prometheus/metrics` on port 9091) |
+		  | Logs | what exactly happened to THIS request | http-logger (and other logger plugins) |
+		  | Traces | where the time went across gateway + services | opentelemetry |
+	- What to watch
+		- Request rate per route / consumer.
+		- Error rate: 4xx (client side) vs 5xx (gateway / backend side). Metric: `apisix_http_status`.
+		- Latency per route / consumer / upstream node. Metric: `apisix_http_latency` (milliseconds).
+		- Traffic volume. Metric: `apisix_bandwidth`.
+	- Request ID
+		- request-id plugin adds an `X-Request-Id` header (to the request sent to the backend and to the response).
+		- Log it in the backend too: search one ID and see the request end to end.
+		  ```
+		  client --> GATEWAY (X-Request-Id: 7f3a...) --> backend logs "7f3a... order created"
+		                   |
+		                   +--> gateway log "7f3a... 201 in 85 ms"
+		  ```
+		- NestJS: read `req.headers['x-request-id']` and add it to every log line.
+	- Status codes from the gateway (debugging cheat sheet)
+		- | Code | Usually means |
+		  | --- | --- |
+		  | 401 / 403 | auth plugin rejected the request (no / bad credential, or not allowed) |
+		  | 404 | no route matched (check host / path / method) |
+		  | 429 (or 503) | rate limited (503 is APISIX's default rejected code) |
+		  | 502 Bad Gateway | backend refused the connection, crashed, or sent an invalid response |
+		  | 503 | no upstream configured (see 5) Services), or rate limited with the default code |
+		  | 504 Gateway Timeout | backend didn't answer within the upstream timeout (see 4) Upstreams) |
+		- Rule: 4xx from the gateway = a problem with the request; 502 / 504 = look at the backend; 503 = check upstream config and limits.
+- 11) Plugins in depth
+	- Definition
+		- A plugin = a piece of code that runs at fixed points (phases) of every request it is attached to.
+	- Phases (APISIX)
+	  ```
+	  request in
+	    |
+	    +-- rewrite        change the request (auth plugins, proxy-rewrite)
+	    +-- access         allow / deny (rate limits, ip-restriction)
+	    +-- before_proxy   just before forwarding
+	    |      ---> upstream (backend) --->
+	    +-- header_filter  change response headers
+	    +-- body_filter    change the response body
+	    +-- log            after the response (loggers, metrics)
+	  ```
+		- NestJS analogy: the request lifecycle (middleware -> guards -> interceptors -> handler -> interceptors), but at the gateway.
+	- Order
+		- Global rule plugins run first, then the route's plugins (merged from route / service / consumer...), phase by phase.
+		- Within a phase, each plugin has a default priority number; higher runs first. Change it per plugin with `_meta.priority`.
+	- Same plugin in several places
+		- Only ONE config is used, by this precedence:
+		  ```
+		  Consumer > Consumer Group > Route > Plugin Config > Service
+		  ```
+		- The winner REPLACES the others (no field merging, see 5) Services).
+		- Exception: same plugin in a global rule AND on a route -> BOTH run.
+	- Common `_meta` options
+		- | Option | Does |
+		  | --- | --- |
+		  | disable | turn a plugin off without deleting its config |
+		  | priority | change the run order |
+		  | filter | run the plugin only when the request matches a condition (e.g. a header or query arg) |
+	- Handy plugins
+		- | Plugin | Does |
+		  | --- | --- |
+		  | cors | adds CORS headers |
+		  | ip-restriction | allow / deny by client IP |
+		  | proxy-rewrite | change path / host / headers before forwarding |
+		  | response-rewrite | change the status / headers / body of the response |
+		  | redirect | redirects (e.g. HTTP -> HTTPS) |
+		  | request-id | adds `X-Request-Id` |
+		  | traffic-split | send a % of traffic to another upstream (canary) |
+		  | api-breaker | stop calling a failing backend for a while (circuit breaker) |
+	- Custom plugins -> see 6) Consumers -> Custom auth logic (Lua plugins, external plugin runners).
 - Interview one-liner
 	- An API gateway is a reverse proxy with API policies: routes match requests (host + path + method), upstreams say where they go, and plugins apply auth, limits and transforms on the way, configured once at the edge for every backend.

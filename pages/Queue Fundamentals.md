@@ -1,4 +1,5 @@
 - 1) What is a Message Queue?
+  collapsed:: true
 	- Definition
 		- A Message Queue is a temporary storage layer between a producer and a consumer.
 		- Flow
@@ -36,6 +37,7 @@
 		  ```
 		- Result: API responds quickly; workers handle heavy tasks asynchronously.
 - 2) Why do message queues exist?
+  collapsed:: true
 	- Interview focus: this is asked very often.
 	- Problem 1: Synchronous processing
 		- Without queue
@@ -75,6 +77,7 @@
 		- Producer does not need to know each consumer.
 		- Queue acts as the contract between producers and consumers.
 - 3) Core components
+  collapsed:: true
 	- Producer
 		- Creates messages/jobs.
 		- Example
@@ -119,6 +122,7 @@
 			- Deliver jobs
 			- Handle retries
 - 4) Event vs Command
+  collapsed:: true
 	- Command
 		- Tells someone what to do.
 		- Examples: `CreateCluster`, `SendEmail`, `GenerateInvoice`
